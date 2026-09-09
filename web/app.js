@@ -12,10 +12,12 @@ let state = {
   users: [],
   courts: [],
   hostelStudents: [],
+  books: [],
   selectedUserId: null,
   selectedStudentRoll: null,
   activeFineTargetUser: null,
-  activeLeaveTargetStudent: null
+  activeLeaveTargetStudent: null,
+  activeReturnBook: null
 };
 
 // ==========================================
@@ -61,6 +63,10 @@ function setupEventListeners() {
 
   // Leave Modal
   document.getElementById("submitLeaveBtn").addEventListener("click", handleSubmitLeave);
+
+  // Return Book Modal
+  const returnBtn = document.getElementById("submitReturnBtn");
+  if (returnBtn) returnBtn.addEventListener("click", handleSubmitReturnBook);
 }
 
 // ==========================================
@@ -75,6 +81,7 @@ async function loadData() {
     state.users = data.users || [];
     state.courts = data.courts || [];
     state.hostelStudents = data.hostelStudents || [];
+    state.books = data.books || [];
 
     if (!state.selectedUserId && state.users.length > 0) {
       state.selectedUserId = state.users[0].userId;
@@ -84,6 +91,7 @@ async function loadData() {
     renderStats();
     renderCourts();
     renderHostelStudents();
+    renderLibraryCatalog();
     renderUsersGrid();
 
     // If a student was selected for billing, refresh bill
@@ -138,6 +146,11 @@ function renderStats() {
   document.getElementById("statBookedSlots").textContent = bookedCount;
 
   document.getElementById("statHostelStudents").textContent = state.hostelStudents.length;
+
+  const booksElem = document.getElementById("statLibraryBooks");
+  if (booksElem) {
+    booksElem.textContent = state.books.filter(b => b.available).length;
+  }
 
   const totalFines = state.users.reduce((sum, u) => sum + (u.fineBalance || 0), 0);
   document.getElementById("statTotalFines").textContent = "Rs. " + totalFines.toFixed(0);
@@ -431,6 +444,130 @@ async function handleRegisterHostelStudent() {
       showToast(data.message, "success");
       closeModal("registerModal");
       state.selectedStudentRoll = roll;
+      loadData();
+    } else {
+      showToast(data.error, "error");
+    }
+  } catch (err) {
+    showToast("Network error: " + err.message, "error");
+  }
+}
+
+// ==========================================
+// Rendering: Campus Library
+// ==========================================
+function renderLibraryCatalog() {
+  const container = document.getElementById("booksGrid");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (state.books.length === 0) {
+    container.innerHTML = `<p class="text-secondary">No books in catalog.</p>`;
+    return;
+  }
+
+  state.books.forEach(b => {
+    const card = document.createElement("div");
+    card.className = "book-card " + (b.available ? "available" : "borrowed");
+
+    let actionBtn = "";
+    if (b.available) {
+      actionBtn = `
+        <button class="btn btn-primary btn-sm" onclick="handleBorrowBook('${b.isbn}')" title="Borrow for active user">
+          📖 Borrow Book
+        </button>
+      `;
+    } else {
+      actionBtn = `
+        <button class="btn btn-secondary btn-sm" onclick="openReturnModal('${b.isbn}', '${b.title.replace(/'/g, "\\'")}', '${(b.borrowerName || '').replace(/'/g, "\\'")}', '${b.borrowerId || ''}')">
+          ↩️ Return / Settle
+        </button>
+      `;
+    }
+
+    card.innerHTML = `
+      <div>
+        <div class="book-header">
+          <div>
+            <div class="book-title">${b.title}</div>
+            <div class="book-author">by ${b.author}</div>
+          </div>
+          <span class="book-category-badge">${b.category}</span>
+        </div>
+        <div class="book-isbn">ISBN: ${b.isbn}</div>
+      </div>
+      <div class="book-status-row">
+        <div>
+          ${b.available 
+            ? '<span style="color: var(--success); font-weight: 600;">🟢 Available</span>' 
+            : `<span style="color: var(--warning); font-weight: 600;">🔴 Loaned to ${b.borrowerName}</span>`}
+        </div>
+        ${actionBtn}
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+async function handleBorrowBook(isbn) {
+  if (!state.selectedUserId) {
+    showToast("Please select an active user first.", "error");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/library/borrow", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        isbn: isbn,
+        userId: state.selectedUserId
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, "success");
+      loadData();
+    } else {
+      showToast(data.error, "error");
+    }
+  } catch (err) {
+    showToast("Network error: " + err.message, "error");
+  }
+}
+
+function openReturnModal(isbn, title, borrowerName, borrowerId) {
+  state.activeReturnBook = { isbn, title, borrowerName, borrowerId };
+  document.getElementById("returnModalTitle").textContent = `Return: ${title}`;
+  document.getElementById("returnModalBookDesc").textContent = `ISBN: ${isbn} - ${title}`;
+  document.getElementById("returnModalBorrowerDesc").textContent = `Borrower: ${borrowerName} (${borrowerId})`;
+  document.getElementById("returnOverdueDays").value = "0";
+  openModal("returnModal");
+}
+
+async function handleSubmitReturnBook() {
+  if (!state.activeReturnBook) return;
+
+  const days = document.getElementById("returnOverdueDays").value || 0;
+
+  try {
+    const res = await fetch("/api/library/return", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        isbn: state.activeReturnBook.isbn,
+        overdueDays: days
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal("returnModal");
+      if (data.fineCharged > 0) {
+        showToast(`Book returned! Overdue penalty of Rs. ${data.fineCharged.toFixed(2)} added to ${state.activeReturnBook.borrowerName}'s campus account. (Sports court bookings now locked until cleared!)`, "error");
+      } else {
+        showToast(data.message, "success");
+      }
       loadData();
     } else {
       showToast(data.error, "error");

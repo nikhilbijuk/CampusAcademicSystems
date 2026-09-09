@@ -14,12 +14,16 @@ A modular, Object-Oriented Java framework for managing sports facility reservati
   - Customizable meal plans (`StandardPlan`, `SpecialDietPlan`).
   - Leave tracking with input validation (`InvalidLeaveDaysException`).
   - Itemized monthly bill generator with leave deductions.
+- **Campus Library Module (Cross-Module Unified Fine Engine)**:
+  - Textbook catalog management (`Book`, `LibraryLoan`) with role checkout quotas (`Student`: max 3 books, `Faculty`: max 10 books).
+  - Overdue return calculation (`Rs. 5.00 / day`).
+  - Cross-module fine propagation: overdue library fines automatically link to `User.getFineBalance()`, instantly freezing sports court bookings until cleared.
 - **Persistence & Storage**:
   - Native Java Object Serialization (`.ser`) for saving/loading system state automatically.
   - Built-in data seed routines for fresh initializations.
 - **Interactive CLI & Unit Tests**:
   - Full-featured 9-option interactive command-line interface.
-  - Automated 11-case unit test suite (`CampusTestHarness`).
+  - Automated 15-case unit test suite (`CampusTestHarness`).
 
 ---
 
@@ -32,6 +36,7 @@ CampusAcademicSystems/
 │       └── campus/
 │           ├── exceptions/      # Custom Exception classes
 │           ├── hostel/          # BaseRoom, SingleOccupancy, ACSuite, MealPlan, HostelStudent
+│           ├── library/         # Book, LibraryLoan
 │           ├── sports/          # User, Student, Faculty, Coach, Reservable, Court
 │           ├── storage/         # CampusData, CampusStorageManager
 │           ├── web/             # CampusWebServer, JsonUtils
@@ -140,7 +145,7 @@ Launches the traditional console runner with the 9-option interactive menu.
 ---
 
 ### 3️⃣ Running the Automated Unit Test Suite
-Executes the comprehensive 11-test verification harness covering OOP inheritance, slot collisions, quota caps, fine holds, polymorphism tariffs, and serialization.
+Executes the comprehensive 15-test verification harness covering OOP inheritance, slot collisions, quota caps, fine holds, polymorphism tariffs, library loans, overdue penalties, and serialization.
 
 * **Windows (PowerShell or CMD)**:
   ```powershell

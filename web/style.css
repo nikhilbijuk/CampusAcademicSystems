@@ -910,3 +910,86 @@ label {
 .hidden {
   display: none !important;
 }
+
+/* =========================================================
+   Library Grid & Book Cards
+   ========================================================= */
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.book-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.book-card:hover {
+  border-color: var(--border-highlight);
+  transform: translateY(-2px);
+}
+
+.book-card.borrowed {
+  border-left: 4px solid var(--warning);
+}
+
+.book-card.available {
+  border-left: 4px solid var(--success);
+}
+
+.book-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+
+.book-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.book-author {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.book-category-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg-card-alt);
+  color: #38bdf8;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.book-isbn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 10px 0;
+}
+
+.book-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-color);
+  font-size: 12px;
+}
+

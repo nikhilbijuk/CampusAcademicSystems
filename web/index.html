@@ -46,6 +46,9 @@
       <button class="nav-tab" data-tab="hostel">
         <span class="tab-icon">🏨</span> Hostel & Mess Billing
       </button>
+      <button class="nav-tab" data-tab="library">
+        <span class="tab-icon">📚</span> Library Catalog
+      </button>
       <button class="nav-tab" data-tab="users">
         <span class="tab-icon">👥</span> Users & Quotas
       </button>
@@ -79,6 +82,13 @@
         <div>
           <div class="stat-label">Hostel Students</div>
           <div id="statHostelStudents" class="stat-value">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-blue">📚</div>
+        <div>
+          <div class="stat-label">Library Books</div>
+          <div id="statLibraryBooks" class="stat-value">5</div>
         </div>
       </div>
       <div class="stat-card">
@@ -149,6 +159,24 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- TAB: CAMPUS LIBRARY CATALOG -->
+    <section id="tab-library" class="tab-pane">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Campus Library & Textbook Circulation</h2>
+          <p class="section-desc">Borrow course textbooks with role limits (Student: 3, Faculty: 10). Overdue penalties feed directly into the unified campus fine balance.</p>
+        </div>
+        <div class="legend">
+          <span class="legend-item"><span class="dot dot-available"></span> Available in Stacks</span>
+          <span class="legend-item"><span class="dot dot-booked"></span> Checked Out</span>
+        </div>
+      </div>
+
+      <div id="booksGrid" class="books-grid">
+        <!-- Rendered via JS -->
       </div>
     </section>
 
@@ -315,6 +343,29 @@
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal('leaveModal')">Cancel</button>
         <button id="submitLeaveBtn" class="btn btn-primary">Apply Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Return Book (with overdue simulator) -->
+  <div id="returnModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="returnModalTitle" class="modal-title">Return Library Book</h3>
+        <button class="modal-close" onclick="closeModal('returnModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="returnModalBookDesc" class="text-secondary"></p>
+        <p id="returnModalBorrowerDesc" class="text-secondary" style="margin-top: 4px;"></p>
+        <div class="form-group" style="margin-top: 16px;">
+          <label for="returnOverdueDays">Days Overdue (Demo Simulator)</label>
+          <input type="number" id="returnOverdueDays" class="form-control" value="0" min="0" max="60">
+          <small class="form-help">Rate: Rs. 5.00/day. Overdue fines immediately restrict sports court reservations until paid!</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('returnModal')">Cancel</button>
+        <button id="submitReturnBtn" class="btn btn-primary">Process Return</button>
       </div>
     </div>
   </div>

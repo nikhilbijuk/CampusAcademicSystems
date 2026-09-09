@@ -2,6 +2,7 @@ package com.campus.test;
 
 import com.campus.exceptions.*;
 import com.campus.hostel.*;
+import com.campus.library.*;
 import com.campus.sports.*;
 import com.campus.storage.*;
 import java.util.ArrayList;
@@ -230,6 +231,89 @@ public class CampusTestHarness {
             }
         } catch (Exception e) {
             System.err.println(" [FAIL] Test 11 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 12: Successful Book Checkout & Loan Tracking
+        try {
+            Book book = new Book("978-0262033848", "Introduction to Algorithms", "Thomas H. Cormen", "Computer Science");
+            User student = new Student("S101", "Rahul");
+            LibraryLoan loan = new LibraryLoan("LN101", book, student, 14);
+
+            if (!book.isAvailable() && book.getCurrentBorrower().getUserId().equals("S101") && !loan.isReturned()) {
+                System.out.println(" [PASS] Test 12: Book checkout and loan status verified");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 12: Book availability or borrower mismatch");
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 12 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 13: BookNotAvailableException on double checkout
+        try {
+            Book book = new Book("978-1118063330", "Operating System Concepts", "Silberschatz", "Systems");
+            User u1 = new Student("S101", "Rahul");
+            User u2 = new Student("S102", "Priya");
+
+            new LibraryLoan("LN102", book, u1, 14);
+            if (!book.isAvailable()) {
+                throw new BookNotAvailableException(book.getIsbn(), book.getTitle());
+            }
+            System.err.println(" [FAIL] Test 13: Expected BookNotAvailableException but none thrown");
+            failed++;
+        } catch (BookNotAvailableException e) {
+            System.out.println(" [PASS] Test 13: Caught expected BookNotAvailableException");
+            passed++;
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 13 wrong exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 14: Overdue Book Return Fine Calculation
+        try {
+            Book book = new Book("978-0078022159", "Database System Concepts", "Korth", "Databases");
+            User student = new Student("S103", "Kiran");
+            LibraryLoan loan = new LibraryLoan("LN103", book, student, 14);
+
+            double fine = loan.completeReturn(4); // 4 days overdue * 5 = Rs. 20.0
+            if (book.isAvailable() && loan.isReturned() && Math.abs(fine - 20.0) < 0.001 && Math.abs(student.getFineBalance() - 20.0) < 0.001) {
+                System.out.println(" [PASS] Test 14: Overdue book return penalty calculation verified (Rs. 20.0 fine charged)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 14: Fine calculation mismatch, got " + fine + ", student fine: " + student.getFineBalance());
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 14 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 15: Cross-Module Verification: Library Fine blocks Court Booking
+        try {
+            Court court = new Court("CRT1", "Badminton");
+            User student = new Student("S104", "Vikram");
+            Book book = new Book("978-0132126953", "Computer Networks", "Tanenbaum", "Networks");
+            LibraryLoan loan = new LibraryLoan("LN104", book, student, 14);
+
+            // Return book with 3 days overdue (Rs. 15 fine added)
+            loan.completeReturn(3);
+
+            List<Court> courts = new ArrayList<>();
+            courts.add(court);
+
+            // Attempt to reserve court slot with unpaid library fine
+            court.reserve("17:00-18:00", student, courts);
+
+            System.err.println(" [FAIL] Test 15: Expected OutstandingFineException from library fine hold, but reservation succeeded");
+            failed++;
+        } catch (OutstandingFineException e) {
+            System.out.println(" [PASS] Test 15: Cross-Module Integration verified (Overdue library fine blocked court reservation)");
+            passed++;
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 15 wrong exception: " + e.getMessage());
             failed++;
         }
 

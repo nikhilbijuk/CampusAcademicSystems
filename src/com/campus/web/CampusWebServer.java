@@ -2,6 +2,7 @@ package com.campus.web;
 
 import com.campus.exceptions.*;
 import com.campus.hostel.*;
+import com.campus.library.*;
 import com.campus.sports.*;
 import com.campus.storage.*;
 import com.sun.net.httpserver.HttpExchange;
@@ -45,6 +46,8 @@ public class CampusWebServer {
         server.createContext("/api/hostel/register", new ApiHostelRegisterHandler());
         server.createContext("/api/hostel/leave", new ApiHostelLeaveHandler());
         server.createContext("/api/hostel/bill", new ApiHostelBillHandler());
+        server.createContext("/api/library/borrow", new ApiLibraryBorrowHandler());
+        server.createContext("/api/library/return", new ApiLibraryReturnHandler());
         server.createContext("/api/save", new ApiSaveHandler());
 
         // Static Web UI Files
@@ -141,6 +144,30 @@ public class CampusWebServer {
                         .append("\"mealPlan\":\"").append(hs.getChosenMealPlan().getClass().getSimpleName()).append("\",")
                         .append("\"leavesThisMonth\":").append(hs.getLeavesThisMonth())
                         .append("}");
+                }
+                json.append("],");
+
+                // Library Books
+                json.append("\"books\":[");
+                List<Book> books = data.getBooks();
+                if (books != null) {
+                    for (int i = 0; i < books.size(); i++) {
+                        Book b = books.get(i);
+                        if (i > 0) json.append(",");
+                        json.append("{")
+                            .append("\"isbn\":\"").append(JsonUtils.escapeJson(b.getIsbn())).append("\",")
+                            .append("\"title\":\"").append(JsonUtils.escapeJson(b.getTitle())).append("\",")
+                            .append("\"author\":\"").append(JsonUtils.escapeJson(b.getAuthor())).append("\",")
+                            .append("\"category\":\"").append(JsonUtils.escapeJson(b.getCategory())).append("\",")
+                            .append("\"available\":").append(b.isAvailable()).append(",");
+                        if (b.getCurrentBorrower() != null) {
+                            json.append("\"borrowerId\":\"").append(JsonUtils.escapeJson(b.getCurrentBorrower().getUserId())).append("\",")
+                                .append("\"borrowerName\":\"").append(JsonUtils.escapeJson(b.getCurrentBorrower().getName())).append("\"");
+                        } else {
+                            json.append("\"borrowerId\":null,\"borrowerName\":null");
+                        }
+                        json.append("}");
+                    }
                 }
                 json.append("]}");
 
@@ -530,6 +557,160 @@ public class CampusWebServer {
                 } else {
                     sendResponse(exchange, 500, "{\"success\":false,\"error\":\"Failed to save campus data\"}", "application/json");
                 }
+            }
+        }
+    }
+
+    private class ApiLibraryBorrowHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, "{\"error\":\"Method Not Allowed\"}", "application/json");
+                return;
+            }
+
+            String body = readRequestBody(exchange);
+            Map<String, String> params = JsonUtils.parseFlatJson(body);
+
+            String isbn = params.get("isbn");
+            String userId = params.get("userId");
+
+            if (isbn == null || userId == null) {
+                sendResponse(exchange, 400, "{\"success\":false,\"error\":\"isbn and userId are required\"}", "application/json");
+                return;
+            }
+
+            synchronized (data) {
+                Book targetBook = null;
+                for (Book b : data.getBooks()) {
+                    if (b.getIsbn().equalsIgnoreCase(isbn)) {
+                        targetBook = b;
+                        break;
+                    }
+                }
+
+                User targetUser = null;
+                for (User u : data.getUsers()) {
+                    if (u.getUserId().equalsIgnoreCase(userId)) {
+                        targetUser = u;
+                        break;
+                    }
+                }
+
+                if (targetBook == null) {
+                    sendResponse(exchange, 404, "{\"success\":false,\"error\":\"Book not found: " + isbn + "\"}", "application/json");
+                    return;
+                }
+                if (targetUser == null) {
+                    sendResponse(exchange, 404, "{\"success\":false,\"error\":\"User not found: " + userId + "\"}", "application/json");
+                    return;
+                }
+
+                if (!targetBook.isAvailable()) {
+                    String borrowerName = targetBook.getCurrentBorrower() != null ? targetBook.getCurrentBorrower().getName() : "another user";
+                    sendResponse(exchange, 409, "{\"success\":false,\"error\":\"Book '" + JsonUtils.escapeJson(targetBook.getTitle()) + "' is already checked out to " + JsonUtils.escapeJson(borrowerName) + "\"}", "application/json");
+                    return;
+                }
+
+                // Check unpaid fine restriction
+                if (targetUser.getFineBalance() > 0) {
+                    sendResponse(exchange, 403, "{\"success\":false,\"error\":\"Library access blocked: " + JsonUtils.escapeJson(targetUser.getName()) + " has outstanding fines of Rs. " + targetUser.getFineBalance() + ". Please clear fines first.\"}", "application/json");
+                    return;
+                }
+
+                // Check borrowing limit (Student: 3, Faculty: 10, Coach: 5)
+                int activeLoans = 0;
+                for (LibraryLoan loan : data.getLibraryLoans()) {
+                    if (!loan.isReturned() && loan.getBorrower().getUserId().equalsIgnoreCase(userId)) {
+                        activeLoans++;
+                    }
+                }
+                int maxBooks = (targetUser instanceof Student) ? 3 : 10;
+                if (activeLoans >= maxBooks) {
+                    sendResponse(exchange, 429, "{\"success\":false,\"error\":\"Borrowing limit exceeded: " + JsonUtils.escapeJson(targetUser.getName()) + " already has " + activeLoans + " active book loans (Limit: " + maxBooks + ")\"}", "application/json");
+                    return;
+                }
+
+                // Issue book
+                String loanId = "LN" + (data.getLibraryLoans().size() + 101);
+                int loanDays = (targetUser instanceof Student) ? 14 : 30;
+                LibraryLoan loan = new LibraryLoan(loanId, targetBook, targetUser, loanDays);
+                data.getLibraryLoans().add(loan);
+
+                sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Book '" + JsonUtils.escapeJson(targetBook.getTitle()) + "' checked out to " + JsonUtils.escapeJson(targetUser.getName()) + " (Due in " + loanDays + " days)\"}", "application/json");
+            }
+        }
+    }
+
+    private class ApiLibraryReturnHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, "{\"error\":\"Method Not Allowed\"}", "application/json");
+                return;
+            }
+
+            String body = readRequestBody(exchange);
+            Map<String, String> params = JsonUtils.parseFlatJson(body);
+
+            String isbn = params.get("isbn");
+            String overdueDaysStr = params.get("overdueDays");
+
+            int overdueDays = 0;
+            if (overdueDaysStr != null && !overdueDaysStr.isEmpty()) {
+                try {
+                    overdueDays = Math.max(0, Integer.parseInt(overdueDaysStr));
+                } catch (NumberFormatException ignored) {}
+            }
+
+            if (isbn == null) {
+                sendResponse(exchange, 400, "{\"success\":false,\"error\":\"isbn is required\"}", "application/json");
+                return;
+            }
+
+            synchronized (data) {
+                Book targetBook = null;
+                for (Book b : data.getBooks()) {
+                    if (b.getIsbn().equalsIgnoreCase(isbn)) {
+                        targetBook = b;
+                        break;
+                    }
+                }
+
+                if (targetBook == null) {
+                    sendResponse(exchange, 404, "{\"success\":false,\"error\":\"Book not found\"}", "application/json");
+                    return;
+                }
+
+                if (targetBook.isAvailable()) {
+                    sendResponse(exchange, 400, "{\"success\":false,\"error\":\"Book is not currently on loan\"}", "application/json");
+                    return;
+                }
+
+                // Find active loan
+                LibraryLoan activeLoan = null;
+                for (LibraryLoan loan : data.getLibraryLoans()) {
+                    if (!loan.isReturned() && loan.getBook().getIsbn().equalsIgnoreCase(isbn)) {
+                        activeLoan = loan;
+                        break;
+                    }
+                }
+
+                if (activeLoan == null) {
+                    targetBook.markReturned();
+                    sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Book returned successfully\"}", "application/json");
+                    return;
+                }
+
+                User borrower = activeLoan.getBorrower();
+                double fineCharged = activeLoan.completeReturn(overdueDays);
+
+                String msg = "Book '" + targetBook.getTitle() + "' successfully returned by " + borrower.getName() + ".";
+                if (fineCharged > 0) {
+                    msg += " Overdue penalty of Rs. " + String.format(Locale.US, "%.2f", fineCharged) + " added to " + borrower.getName() + "'s campus account (Total Outstanding Fine: Rs. " + String.format(Locale.US, "%.2f", borrower.getFineBalance()) + ").";
+                }
+
+                sendResponse(exchange, 200, "{\"success\":true,\"message\":\"" + JsonUtils.escapeJson(msg) + "\",\"fineCharged\":" + fineCharged + ",\"newFineBalance\":" + borrower.getFineBalance() + "}", "application/json");
             }
         }
     }

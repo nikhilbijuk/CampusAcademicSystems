@@ -1,6 +1,7 @@
 package com.campus.storage;
 
 import com.campus.hostel.*;
+import com.campus.library.*;
 import com.campus.sports.*;
 import java.io.*;
 import java.util.ArrayList;
@@ -28,7 +29,13 @@ public class CampusStorageManager {
             return seedInitialData();
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (CampusData) ois.readObject();
+            CampusData data = (CampusData) ois.readObject();
+            if (data.getBooks() == null) data.setBooks(new ArrayList<>());
+            if (data.getLibraryLoans() == null) data.setLibraryLoans(new ArrayList<>());
+            if (data.getBooks().isEmpty()) {
+                seedBooks(data);
+            }
+            return data;
         } catch (Exception e) {
             System.err.println("Notice: Could not load saved state (" + e.getMessage() + "). Seeding fresh data.");
             return seedInitialData();
@@ -59,6 +66,19 @@ public class CampusStorageManager {
         hostelStudents.add(new HostelStudent("STU203", "Rohan Das", new ACSuite(101, 6000.0), new SpecialDietPlan()));
         data.setHostelStudents(hostelStudents);
 
+        // Sample Library Books
+        seedBooks(data);
+
         return data;
+    }
+
+    public static void seedBooks(CampusData data) {
+        List<Book> books = new ArrayList<>();
+        books.add(new Book("978-0262033848", "Introduction to Algorithms (CLRS)", "Thomas H. Cormen", "Computer Science"));
+        books.add(new Book("978-1118063330", "Operating System Concepts", "Abraham Silberschatz", "Systems"));
+        books.add(new Book("978-0078022159", "Database System Concepts", "Henry F. Korth", "Databases"));
+        books.add(new Book("978-0132126953", "Computer Networks", "Andrew S. Tanenbaum", "Networks"));
+        books.add(new Book("978-0132350884", "Clean Code: A Handbook of Agile Software Craftsmanship", "Robert C. Martin", "Software Engineering"));
+        data.setBooks(books);
     }
 }
