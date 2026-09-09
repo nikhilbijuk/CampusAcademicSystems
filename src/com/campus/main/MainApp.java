@@ -110,10 +110,29 @@ public class MainApp {
                     String slot = scanner.next();
 
                     if (selectedCourt.checkAvailability(slot)) {
-                        System.out.println("Slot '" + slot + "' is not booked.");
+                        System.out.println("Slot '" + slot + "' is not currently booked.");
                     } else {
-                        selectedCourt.release(slot);
-                        System.out.println(" SUCCESS: Slot '" + slot + "' released on " + selectedCourt + ".");
+                        System.out.println("\n--- Cancellation Authorization ---");
+                        System.out.println("0. Admin Override");
+                        for (int i = 0; i < users.size(); i++) {
+                            System.out.println((i + 1) + ". " + users.get(i).getName() + " (" + users.get(i).getUserId() + ")");
+                        }
+                        System.out.print("Select User authorizing cancellation [0-" + users.size() + "]: ");
+                        int authIdx = scanner.nextInt();
+                        if (authIdx == 0) {
+                            selectedCourt.release(slot);
+                            System.out.println(" SUCCESS: Slot '" + slot + "' released on " + selectedCourt + " (Admin override).");
+                        } else if (authIdx >= 1 && authIdx <= users.size()) {
+                            User authUser = users.get(authIdx - 1);
+                            boolean released = selectedCourt.release(slot, authUser);
+                            if (released) {
+                                System.out.println(" SUCCESS: Slot '" + slot + "' released on " + selectedCourt + " by " + authUser.getName() + ".");
+                            } else {
+                                System.out.println(" ERROR: Slot '" + slot + "' was not booked by " + authUser.getName() + ". Cancellation denied.");
+                            }
+                        } else {
+                            System.out.println("Invalid user selection.");
+                        }
                     }
                     break;
                 }
@@ -178,7 +197,12 @@ public class MainApp {
 
                     System.out.println("Select Room Type: 1. Single Occupancy  2. AC Suite");
                     int rmChoice = scanner.nextInt();
-                    BaseRoom room = (rmChoice == 2) ? new SingleOccupancy(401, 5500.0) : new SingleOccupancy(301, 4500.0);
+                    System.out.print("Enter Room Number: ");
+                    int rmNum = scanner.nextInt();
+                    System.out.print("Enter Monthly Base Rate (e.g. 4500): Rs. ");
+                    double baseRate = scanner.nextDouble();
+
+                    BaseRoom room = (rmChoice == 2) ? new ACSuite(rmNum, baseRate) : new SingleOccupancy(rmNum, baseRate);
 
                     System.out.println("Select Mess Plan: 1. Standard Plan  2. Special Diet Plan");
                     int mpChoice = scanner.nextInt();
@@ -186,7 +210,7 @@ public class MainApp {
 
                     HostelStudent newStudent = new HostelStudent(roll, name, room, plan);
                     hostelStudents.add(newStudent);
-                    System.out.println(" SUCCESS: Registered hostel student " + name + " (" + roll + ")!");
+                    System.out.println(" SUCCESS: Registered hostel student " + name + " (" + roll + ") with room " + rmNum + " [" + room.getClass().getSimpleName() + "]!");
                     break;
                 }
 
@@ -248,7 +272,8 @@ public class MainApp {
                     } else {
                         for (HostelStudent hs : hostelStudents) {
                             System.out.println("- " + hs.getName() + " (" + hs.getRollNo() + ") | Room: " + 
-                                               hs.getAssignedRoom().getRoomNumber() + " | Leaves: " + hs.getLeavesThisMonth() + " days");
+                                               hs.getAssignedRoom().getRoomNumber() + " [" + hs.getAssignedRoom().getClass().getSimpleName() + "] | Plan: " +
+                                               hs.getChosenMealPlan().getClass().getSimpleName() + " | Leaves: " + hs.getLeavesThisMonth() + " days");
                         }
                     }
                     break;

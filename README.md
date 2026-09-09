@@ -8,18 +8,18 @@ A modular, Object-Oriented Java framework for managing sports facility reservati
   - Court slot reservation with collision detection.
   - Quota enforcement per role (`Student`: max 2, `Faculty`: max 5, `Coach`: max 10).
   - Unpaid fine check (`OutstandingFineException`) blocking reservations until cleared.
-  - Slot cancellation and release functionality.
+  - Slot cancellation with user authorization checks and admin override.
 - **Hostel & Mess Billing Module**:
   - Flexible room models (`SingleOccupancy`, `ACSuite`).
   - Customizable meal plans (`StandardPlan`, `SpecialDietPlan`).
   - Leave tracking with input validation (`InvalidLeaveDaysException`).
-  - Itemized monthly bill generator.
+  - Itemized monthly bill generator with leave deductions.
 - **Persistence & Storage**:
   - Native Java Object Serialization (`.ser`) for saving/loading system state automatically.
   - Built-in data seed routines for fresh initializations.
 - **Interactive CLI & Unit Tests**:
   - Full-featured 9-option interactive command-line interface.
-  - Automated unit test suite (`CampusTestHarness`).
+  - Automated 11-case unit test suite (`CampusTestHarness`).
 
 ---
 

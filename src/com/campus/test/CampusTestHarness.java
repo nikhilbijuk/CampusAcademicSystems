@@ -142,6 +142,97 @@ public class CampusTestHarness {
             failed++;
         }
 
+        // Test 7: ACSuite Tariff Calculation
+        try {
+            BaseRoom acRoom = new ACSuite(501, 5000.0);
+            double tariff = acRoom.calculateMonthlyTariff(); // 5000 + 1500 = 6500
+            if (Math.abs(tariff - 6500.0) < 0.001) {
+                System.out.println(" [PASS] Test 7: ACSuite monthly tariff calculated correctly (Rs. 6500.0)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 7: Expected tariff 6500.0, got " + tariff);
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 7 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 8: SingleOccupancy Tariff Calculation
+        try {
+            BaseRoom singleRoom = new SingleOccupancy(201, 4000.0);
+            double tariff = singleRoom.calculateMonthlyTariff(); // 4000 * 1.2 = 4800
+            if (Math.abs(tariff - 4800.0) < 0.001) {
+                System.out.println(" [PASS] Test 8: SingleOccupancy tariff calculated correctly (Rs. 4800.0)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 8: Expected tariff 4800.0, got " + tariff);
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 8 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 9: Court Slot Release with User Authorization
+        try {
+            Court court = new Court("CRT1", "Badminton");
+            User owner = new Student("S101", "Rahul");
+            User intruder = new Student("S102", "Priya");
+            List<Court> courts = new ArrayList<>();
+            courts.add(court);
+
+            court.reserve("10:00-11:00", owner, courts);
+
+            // Intruder tries to cancel owner's booking
+            boolean intruderRelease = court.release("10:00-11:00", intruder);
+            // Owner cancels own booking
+            boolean ownerRelease = court.release("10:00-11:00", owner);
+
+            if (!intruderRelease && ownerRelease && court.checkAvailability("10:00-11:00")) {
+                System.out.println(" [PASS] Test 9: Court release authorization verified (intruder blocked, owner allowed)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 9: Release authorization check failed");
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 9 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 10: InvalidLeaveDaysException for Exceeding Month Days
+        try {
+            HostelStudent student = new HostelStudent("STU102", "Dev", new SingleOccupancy(102, 3000.0), new StandardPlan());
+            student.applyLeave(35, 30); // 35 days in a 30-day month
+            System.err.println(" [FAIL] Test 10: Expected InvalidLeaveDaysException for days exceeding month");
+            failed++;
+        } catch (InvalidLeaveDaysException e) {
+            System.out.println(" [PASS] Test 10: Caught expected InvalidLeaveDaysException for leaves exceeding month days");
+            passed++;
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 10 wrong exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 11: Itemized Bill Calculation for Standard vs SpecialDietPlan
+        try {
+            HostelStudent s1 = new HostelStudent("STU103", "Kavya", new SingleOccupancy(103, 4000.0), new StandardPlan());
+            s1.applyLeave(5, 30); // Leaves = 5, Active mess days = 25. Standard rate = 120/day -> 25 * 120 = 3000. Room = 4000 * 1.2 = 4800. Total = 7800
+            String bill = s1.getBillSummary(30);
+
+            if (bill.contains("7800.00") && bill.contains("5 days leave deducted")) {
+                System.out.println(" [PASS] Test 11: Itemized hostel bill and leave deductions verified");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 11: Bill output mismatch: " + bill);
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 11 exception: " + e.getMessage());
+            failed++;
+        }
+
         System.out.println("\n--------------------------------------------------");
         System.out.println("TEST SUMMARY: Passed " + passed + " / " + (passed + failed) + " tests.");
         System.out.println("--------------------------------------------------");
