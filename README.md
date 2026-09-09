@@ -34,8 +34,10 @@ CampusAcademicSystems/
 │           ├── hostel/          # BaseRoom, SingleOccupancy, ACSuite, MealPlan, HostelStudent
 │           ├── sports/          # User, Student, Faculty, Coach, Reservable, Court
 │           ├── storage/         # CampusData, CampusStorageManager
+│           ├── web/             # CampusWebServer, JsonUtils
 │           ├── test/            # CampusTestHarness
-│           └── main/            # MainApp entry point
+│           └── main/            # MainApp (CLI), WebLauncher (Web UI)
+├── web/                         # Modern Web Dashboard (HTML, CSS, JS)
 ├── bin/                         # Compiled bytecode (.class)
 ├── data/                        # Serialized storage (.ser)
 └── README.md
@@ -56,7 +58,14 @@ From the project root folder:
 javac -d bin (Get-ChildItem -Recurse -Filter *.java | Select-Object -ExpandProperty FullName)
 ```
 
-### Run Application
+### Option A: Run Modern Web Dashboard (Recommended for Demonstrations)
+```powershell
+# Launch the Web Server & Dashboard at http://localhost:8080
+java -cp bin com.campus.main.WebLauncher
+```
+Open your browser and navigate to: **`http://localhost:8080`**
+
+### Option B: Run Interactive Terminal CLI
 ```powershell
 # Launch the Interactive Console Runner
 java -cp bin com.campus.main.MainApp
@@ -64,6 +73,6 @@ java -cp bin com.campus.main.MainApp
 
 ### Run Unit Tests
 ```powershell
-# Execute the Unit Test Suite
+# Execute the Unit Test Suite (11 test cases)
 java -cp bin com.campus.test.CampusTestHarness
 ```

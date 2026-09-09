@@ -1,0 +1,65 @@
+package com.campus.main;
+
+import com.campus.web.CampusWebServer;
+import java.awt.Desktop;
+import java.net.URI;
+import java.util.Scanner;
+
+public class WebLauncher {
+    private static final int PORT = 8080;
+
+    public static void main(String[] args) {
+        System.out.println("==========================================================");
+        System.out.println("=== Campus Management System - Web Server Launcher ===");
+        System.out.println("==========================================================");
+
+        try {
+            CampusWebServer webServer = new CampusWebServer(PORT);
+            webServer.start();
+
+            String url = "http://localhost:" + PORT;
+            System.out.println("\n [READY] Web application is live!");
+            System.out.println(" Open your browser and navigate to: " + url);
+            System.out.println(" Press 'q' followed by Enter (or Ctrl+C) to stop the server.\n");
+
+            // Attempt to open default browser automatically
+            try {
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    Desktop.getDesktop().browse(new URI(url));
+                }
+            } catch (Exception e) {
+                // If headless or browser cannot be launched, proceed silently
+            }
+
+            // Add JVM shutdown hook for clean termination
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                webServer.stop();
+                System.out.println("Server stopped.");
+            }));
+
+            // Wait for user input to stop if stdin available, otherwise wait indefinitely
+            try {
+                Scanner scanner = new Scanner(System.in);
+                if (System.console() != null || scanner.hasNextLine()) {
+                    while (scanner.hasNextLine()) {
+                        String line = scanner.nextLine().trim();
+                        if ("q".equalsIgnoreCase(line) || "exit".equalsIgnoreCase(line)) {
+                            break;
+                        }
+                    }
+                    webServer.stop();
+                    System.out.println("Server shutdown cleanly. Goodbye!");
+                } else {
+                    // Non-interactive or daemon mode
+                    Thread.currentThread().join();
+                }
+            } catch (Exception e) {
+                // Keep running until killed
+                Thread.currentThread().join();
+            }
+        } catch (Exception e) {
+            System.err.println("Fatal Error starting web server: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}

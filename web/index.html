@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Academic Management System | KTU Mini Project</title>
+  <meta name="description" content="A modern web dashboard for Campus Academic Systems featuring sports court reservations, quota enforcement, hostel room management, and automated mess billing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="logo-icon">🎓</div>
+        <div>
+          <h1 class="brand-title">CampusAcademic<span class="brand-accent">OS</span></h1>
+          <p class="brand-subtitle">KTU Academic Mini-Project Framework</p>
+        </div>
+      </div>
+
+      <!-- User Context Switcher -->
+      <div class="header-controls">
+        <div class="active-user-box">
+          <span class="user-label">Acting As:</span>
+          <select id="userSelector" class="user-select" title="Switch active acting user">
+            <!-- Populated dynamically via JS -->
+          </select>
+          <div id="userBadge" class="badge badge-student">Student</div>
+        </div>
+
+        <button id="saveBtn" class="btn btn-save" title="Persist system state to campus_data.ser">
+          <span class="btn-icon">💾</span> Save State
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="sports">
+        <span class="tab-icon">🏟️</span> Sports Facilities
+      </button>
+      <button class="nav-tab" data-tab="hostel">
+        <span class="tab-icon">🏨</span> Hostel & Mess Billing
+      </button>
+      <button class="nav-tab" data-tab="users">
+        <span class="tab-icon">👥</span> Users & Quotas
+      </button>
+      <button class="nav-tab" data-tab="viva">
+        <span class="tab-icon">💡</span> Viva & Architecture
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-content">
+
+    <!-- KPI Summary Bar -->
+    <section class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon icon-blue">🏟️</div>
+        <div>
+          <div class="stat-label">Active Courts</div>
+          <div id="statCourts" class="stat-value">3</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-emerald">🏸</div>
+        <div>
+          <div class="stat-label">Slots Reserved</div>
+          <div id="statBookedSlots" class="stat-value">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-purple">🏨</div>
+        <div>
+          <div class="stat-label">Hostel Students</div>
+          <div id="statHostelStudents" class="stat-value">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-amber">⚠️</div>
+        <div>
+          <div class="stat-label">Outstanding Fines</div>
+          <div id="statTotalFines" class="stat-value">Rs. 0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: SPORTS FACILITIES -->
+    <section id="tab-sports" class="tab-pane active">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Sports Facility Court Booking</h2>
+          <p class="section-desc">Real-time slot reservation with collision detection and role-based quota enforcement.</p>
+        </div>
+        <div class="legend">
+          <span class="legend-item"><span class="dot dot-available"></span> Available</span>
+          <span class="legend-item"><span class="dot dot-booked"></span> Reserved</span>
+        </div>
+      </div>
+
+      <div id="courtsGrid" class="courts-grid">
+        <!-- Rendered dynamically via app.js -->
+      </div>
+    </section>
+
+    <!-- TAB 2: HOSTEL & MESS BILLING -->
+    <section id="tab-hostel" class="tab-pane">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Hostel Residency & Mess Billing</h2>
+          <p class="section-desc">Room tariff calculation with polymorphism and leave-deducted meal billing.</p>
+        </div>
+        <button id="openRegisterHostelBtn" class="btn btn-primary">
+          <span>➕</span> Register Student
+        </button>
+      </div>
+
+      <div class="hostel-layout">
+        <!-- Student Roster -->
+        <div class="hostel-roster-col">
+          <div class="card-box">
+            <h3 class="box-title">Registered Residents</h3>
+            <div id="hostelStudentsList" class="hostel-student-list">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Invoice / Bill Preview Pane -->
+        <div class="hostel-bill-col">
+          <div class="card-box bill-box">
+            <div class="bill-header">
+              <h3 class="box-title">Monthly Itemized Invoice</h3>
+              <span id="billMonthBadge" class="badge badge-neutral">30-Day Cycle</span>
+            </div>
+            
+            <div id="billPlaceholder" class="bill-placeholder">
+              <div class="placeholder-icon">🧾</div>
+              <p>Select any student on the left to inspect or generate their live itemized mess & room bill.</p>
+            </div>
+
+            <div id="billContainer" class="bill-container hidden">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: USERS & QUOTA/FINE MANAGEMENT -->
+    <section id="tab-users" class="tab-pane">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Campus Users & Booking Quotas</h2>
+          <p class="section-desc">Role-based quota ceilings (Student: 2, Faculty: 5, Coach: 10) and fine balances.</p>
+        </div>
+      </div>
+
+      <div id="usersGrid" class="users-grid">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- TAB 4: VIVA & ARCHITECTURE REFERENCE -->
+    <section id="tab-viva" class="tab-pane">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">KTU Mini Project Viva & Architecture Guide</h2>
+          <p class="section-desc">Quick cheat sheet explaining how Java OOP concepts are implemented across this codebase.</p>
+        </div>
+      </div>
+
+      <div class="viva-grid">
+        <div class="viva-card">
+          <div class="viva-badge">Polymorphism</div>
+          <h3 class="viva-title">Dynamic Tariff & Meal Costs</h3>
+          <p class="viva-text">
+            <code>BaseRoom</code> and <code>MealPlan</code> are abstract classes. 
+            <code>ACSuite</code> and <code>SingleOccupancy</code> override <code>calculateMonthlyTariff()</code>, 
+            while <code>StandardPlan</code> and <code>SpecialDietPlan</code> override <code>calculateMealCost()</code>. 
+            The billing routine calls them polymorphically at runtime.
+          </p>
+        </div>
+
+        <div class="viva-card">
+          <div class="viva-badge">Inheritance</div>
+          <h3 class="viva-title">Role-Based Quotas</h3>
+          <p class="viva-text">
+            <code>User</code> is the superclass. <code>Student</code> (quota 2), <code>Faculty</code> (quota 5), and <code>Coach</code> (quota 10) 
+            extend <code>User</code> and provide their own limit via overridden <code>getBookingLimit()</code>.
+          </p>
+        </div>
+
+        <div class="viva-card">
+          <div class="viva-badge">Custom Exceptions</div>
+          <h3 class="viva-title">Business Rule Integrity</h3>
+          <p class="viva-text">
+            Enforces invariants: <code>SlotAlreadyBookedException</code> prevents double bookings, 
+            <code>OutstandingFineException</code> freezes bookings, <code>BookingQuotaExceededException</code> caps reservations, 
+            and <code>InvalidLeaveDaysException</code> rejects negative or month-exceeding days.
+          </p>
+        </div>
+
+        <div class="viva-card">
+          <div class="viva-badge">Persistence</div>
+          <h3 class="viva-title">Native Java Object Serialization</h3>
+          <p class="viva-text">
+            All models implement <code>Serializable</code>. <code>CampusStorageManager</code> uses 
+            <code>ObjectOutputStream</code> and <code>ObjectInputStream</code> to automatically persist and reload full state 
+            to/from <code>data/campus_data.ser</code>.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: Fine Management -->
+  <div id="fineModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="fineModalTitle" class="modal-title">Manage User Fine</h3>
+        <button class="modal-close" onclick="closeModal('fineModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="fineModalUserDesc" class="text-secondary"></p>
+        <div class="form-group">
+          <label for="fineAction">Action</label>
+          <select id="fineAction" class="form-control">
+            <option value="pay">Pay / Clear Fine</option>
+            <option value="add">Impose / Add Fine</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="fineAmount">Amount (Rs.)</label>
+          <input type="number" id="fineAmount" class="form-control" placeholder="e.g. 100" min="1">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('fineModal')">Cancel</button>
+        <button id="submitFineBtn" class="btn btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Register Hostel Student -->
+  <div id="registerModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Register Hostel Resident</h3>
+        <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="regRoll">Roll Number</label>
+          <input type="text" id="regRoll" class="form-control" placeholder="e.g. STU501">
+        </div>
+        <div class="form-group">
+          <label for="regName">Full Name</label>
+          <input type="text" id="regName" class="form-control" placeholder="e.g. Adarsh Nair">
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="regRoomType">Room Model</label>
+            <select id="regRoomType" class="form-control">
+              <option value="SingleOccupancy">Single Occupancy (+20% tariff)</option>
+              <option value="ACSuite">AC Suite (+Rs. 1500 AC tax)</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label for="regRoomNum">Room No.</label>
+            <input type="number" id="regRoomNum" class="form-control" placeholder="e.g. 402">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="regBaseRate">Base Rate (Rs.)</label>
+            <input type="number" id="regBaseRate" class="form-control" value="4500">
+          </div>
+          <div class="form-group flex-1">
+            <label for="regMealPlan">Meal Plan</label>
+            <select id="regMealPlan" class="form-control">
+              <option value="StandardPlan">Standard Plan (Rs. 120/day)</option>
+              <option value="SpecialDietPlan">Special Diet Plan (Rs. 150/day + Rs. 500 premium)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('registerModal')">Cancel</button>
+        <button id="submitRegisterBtn" class="btn btn-primary">Register Student</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Apply Leave -->
+  <div id="leaveModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Apply Monthly Leave</h3>
+        <button class="modal-close" onclick="closeModal('leaveModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="leaveModalUserDesc" class="text-secondary"></p>
+        <div class="form-group">
+          <label for="leaveDaysInput">Additional Leave Days</label>
+          <input type="number" id="leaveDaysInput" class="form-control" placeholder="e.g. 3" min="1" max="30">
+          <small class="form-help">Mess charges are deducted for every approved leave day.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('leaveModal')">Cancel</button>
+        <button id="submitLeaveBtn" class="btn btn-primary">Apply Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
