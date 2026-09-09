@@ -39,12 +39,13 @@ public class WebLauncher {
 
             // Wait for user input to stop if stdin available, otherwise wait indefinitely
             try {
-                Scanner scanner = new Scanner(System.in);
-                if (System.console() != null || scanner.hasNextLine()) {
-                    while (scanner.hasNextLine()) {
-                        String line = scanner.nextLine().trim();
-                        if ("q".equalsIgnoreCase(line) || "exit".equalsIgnoreCase(line)) {
-                            break;
+                if (System.console() != null) {
+                    try (Scanner scanner = new Scanner(System.in)) {
+                        while (scanner.hasNextLine()) {
+                            String line = scanner.nextLine().trim();
+                            if ("q".equalsIgnoreCase(line) || "exit".equalsIgnoreCase(line)) {
+                                break;
+                            }
                         }
                     }
                     webServer.stop();
