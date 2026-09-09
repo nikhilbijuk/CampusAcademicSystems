@@ -48,9 +48,29 @@ CampusAcademicSystems/
 └── README.md
 ```
 
+## ⚡ Quick Start: Run Locally in 2 Steps
+
+If you just want to run the application immediately on your machine:
+
+1. **Open your Terminal / PowerShell** in this project folder:
+   ```powershell
+   cd CampusAcademicSystems
+   ```
+2. **Start the Web Dashboard**:
+   ```powershell
+   java -cp bin com.campus.main.WebLauncher
+   ```
+3. **Open in Browser**:
+   Your default browser will pop open automatically to:  
+   👉 **[http://localhost:8080](http://localhost:8080)**  
+   *(To stop the server when done, type `q` and press `Enter`, or press `Ctrl + C`)*
+
+> [!NOTE]
+> All `.class` files are already pre-compiled into `bin/`. If you ever edit Java source code and need to recompile, see the full compilation steps below.
+
 ---
 
-## 🚀 Getting Started & Execution Guide
+## 🚀 Detailed Execution & Compilation Guide
 
 ### 📋 Prerequisites
 Ensure you have the following installed on your machine:
