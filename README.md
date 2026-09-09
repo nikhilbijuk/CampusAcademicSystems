@@ -45,34 +45,134 @@ CampusAcademicSystems/
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started & Execution Guide
 
-### Prerequisites
-- Java Development Kit (JDK 8 or higher)
-- Git
+### 📋 Prerequisites
+Ensure you have the following installed on your machine:
+* **Java Development Kit (JDK 8 or higher)**: Verify by running:
+  ```bash
+  javac -version
+  java -version
+  ```
+* **Git** (optional, for version control)
 
-### Build & Compilation
-From the project root folder:
+---
+
+### 1️⃣ Compilation
+
+Before running the system, compile all Java source files from the project root into the `bin/` directory:
+
+#### 🪟 Windows (PowerShell)
 ```powershell
-# Compile all Java source files into bin/
+# Create bin directory if not present
+if (!(Test-Path "bin")) { New-Item -ItemType Directory -Path "bin" }
+
+# Compile all source files recursively
 javac -d bin (Get-ChildItem -Recurse -Filter *.java | Select-Object -ExpandProperty FullName)
 ```
 
-### Option A: Run Modern Web Dashboard (Recommended for Demonstrations)
-```powershell
-# Launch the Web Server & Dashboard at http://localhost:8080
-java -cp bin com.campus.main.WebLauncher
-```
-Open your browser and navigate to: **`http://localhost:8080`**
+#### 🪟 Windows (Command Prompt / CMD)
+```cmd
+:: Create bin directory if not present
+if not exist bin mkdir bin
 
-### Option B: Run Interactive Terminal CLI
-```powershell
-# Launch the Interactive Console Runner
-java -cp bin com.campus.main.MainApp
+:: Find and compile all Java files
+dir /s /b src\*.java > sources.txt
+javac -d bin @sources.txt
+del sources.txt
 ```
 
-### Run Unit Tests
-```powershell
-# Execute the Unit Test Suite (11 test cases)
-java -cp bin com.campus.test.CampusTestHarness
+#### 🐧 Linux & 🍎 macOS (Bash / Zsh)
+```bash
+# Create bin directory if not present
+mkdir -p bin
+
+# Find and compile all Java files
+find src -name "*.java" > sources.txt
+javac -d bin @sources.txt
+rm sources.txt
+
+# Alternatively in one line:
+javac -d bin $(find src -name "*.java")
 ```
+
+---
+
+### 2️⃣ Running the Application
+
+You can run the system in two distinct modes:
+
+#### Option A: Modern Web Dashboard (Recommended for Demonstrations & Viva)
+Launches the embedded HTTP server and serves the responsive single-page web dashboard.
+
+* **Windows (PowerShell or CMD)**:
+  ```powershell
+  java -cp bin com.campus.main.WebLauncher
+  ```
+* **Linux / macOS**:
+  ```bash
+  java -cp bin com.campus.main.WebLauncher
+  ```
+
+🌐 **Accessing the Dashboard**:
+* Open your browser and navigate to: **[http://localhost:8080](http://localhost:8080)**
+* On desktop environments, your default browser will attempt to launch automatically.
+* On headless Linux servers or remote machines, forward port `8080` over SSH:
+  ```bash
+  ssh -L 8080:localhost:8080 username@server-ip
+  ```
+* **Stopping the Web Server**: Type `q` followed by `Enter` in the terminal, or press `Ctrl + C`.
+
+---
+
+#### Option B: Interactive Terminal CLI
+Launches the traditional console runner with the 9-option interactive menu.
+
+* **Windows (PowerShell or CMD)**:
+  ```powershell
+  java -cp bin com.campus.main.MainApp
+  ```
+* **Linux / macOS**:
+  ```bash
+  java -cp bin com.campus.main.MainApp
+  ```
+
+---
+
+### 3️⃣ Running the Automated Unit Test Suite
+Executes the comprehensive 11-test verification harness covering OOP inheritance, slot collisions, quota caps, fine holds, polymorphism tariffs, and serialization.
+
+* **Windows (PowerShell or CMD)**:
+  ```powershell
+  java -cp bin com.campus.test.CampusTestHarness
+  ```
+* **Linux / macOS**:
+  ```bash
+  java -cp bin com.campus.test.CampusTestHarness
+  ```
+
+---
+
+### ❓ Troubleshooting & FAQs
+
+* **Error: `Address already in use: bind` (Port 8080 Busy)**:
+  * Another application is using port 8080.
+  * **Windows**: Find and terminate the process:
+    ```powershell
+    Get-Process -Id (Get-NetTCPConnection -LocalPort 8080).OwningProcess | Stop-Process -Force
+    ```
+  * **Linux / macOS**: Free the port:
+    ```bash
+    fuser -k 8080/tcp
+    # Or:
+    kill -9 $(lsof -t -i:8080)
+    ```
+* **Data Persistence**:
+  * All active court reservations, registered hostel students, and fine balances are saved to `data/campus_data.ser`.
+  * To reset the application back to default seed data at any time, simply delete the file:
+    ```bash
+    # Windows:
+    Remove-Item -Path "data/campus_data.ser" -Force
+    # Linux/macOS:
+    rm -f data/campus_data.ser
+    ```
