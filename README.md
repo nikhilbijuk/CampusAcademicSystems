@@ -249,23 +249,46 @@ The frontend (`index.html` + `web/app.js`) features built-in fallback mock-state
 
 ---
 
-### Method 2: Full-Stack Cloud Deployment (Render / Railway / Fly.io with Docker)
-To deploy the real Java backend with REST endpoints (`/api/*`) on the cloud, use the included [`Dockerfile`](Dockerfile).
+### Method 2: Full-Stack Cloud Deployment (Render & Free Alternatives)
+Because the project contains a standardized [`Dockerfile`](Dockerfile) and `WebLauncher` dynamically binds to any cloud `$PORT`, you can deploy to any container cloud:
 
-#### Deploying on Render (Free Tier):
-1. Sign up for a free account at [Render.com](https://render.com).
-2. Click **New +** > **Web Service**.
-3. Connect your GitHub repository: `CampusAcademicSystems`.
-4. Render will automatically detect the [`Dockerfile`](Dockerfile).
-5. Configure settings:
-   * **Name**: `campus-academic-systems`
-   * **Region**: Nearest to you (e.g., Singapore, Frankfurt, Oregon)
-   * **Runtime**: `Docker`
-   * **Instance Type**: `Free`
-6. Click **Create Web Service**.
-7. Render will build the OpenJDK container, start `com.campus.main.WebLauncher` on dynamic cloud `$PORT`, and provide you with a permanent HTTPS link (e.g., `https://campus-academic-systems.onrender.com`).
+#### 1. Koyeb (Recommended Free Alternative — No Cold Sleep)
+* **Website**: [koyeb.com](https://www.koyeb.com)
+* **Free Tier**: 1 free Eco Web Service (512MB RAM, 0.1 vCPU), free SSL (`*.koyeb.app`), faster wake-ups than Render.
+* **Steps**:
+  1. Sign in to Koyeb with GitHub.
+  2. Click **Create App** > Select **GitHub**.
+  3. Select `nikhilbijuk/CampusAcademicSystems`.
+  4. Choose **Dockerfile** deployment.
+  5. Select **Eco Free** tier and click **Deploy**.
+
+#### 2. Railway (Fastest Setup & Zero Cold-Starts)
+* **Website**: [railway.app](https://railway.app)
+* **Highlights**: Real-time log streaming, instant container build, zero lag.
+* **Steps**:
+  1. Log in to Railway using your GitHub account.
+  2. Click **New Project** > **Deploy from GitHub repo**.
+  3. Select `CampusAcademicSystems`.
+  4. Railway automatically detects [`Dockerfile`](Dockerfile) and deploys on a free public domain.
+
+#### 3. Render (Standard Free Tier)
+* **Website**: [render.com](https://render.com)
+* **Free Tier**: Free web service with automatic GitHub continuous deployment.
+* **Steps**:
+  1. Sign up on Render.com > Click **New +** > **Web Service**.
+  2. Connect `CampusAcademicSystems` repository.
+  3. Render auto-selects `Docker` runtime and `Dockerfile`.
+  4. Select **Free** instance type and click **Create Web Service**.
+
+#### 4. Fly.io (Global Edge Micro-VMs)
+* **Website**: [fly.io](https://fly.io)
+* **Steps**:
+  1. Install CLI: `powershell -Command "iwr https://fly.io/install.ps1 -useb | iex"`
+  2. Run `fly launch` in the project root directory.
+  3. Run `fly deploy` to launch onto lightweight Firecracker micro-VMs.
 
 ---
+
 
 ### Method 3: Instant Live Viva Tunneling (Localtunnel / Ngrok)
 To demonstrate your locally running Java server to an external evaluator, viva examiner, or mobile phone over public Wi-Fi without deploying to the cloud:
