@@ -6,18 +6,28 @@ import java.net.URI;
 import java.util.Scanner;
 
 public class WebLauncher {
-    private static final int PORT = 8080;
+
+    private static int getPort() {
+        String envPort = System.getenv("PORT");
+        if (envPort != null && !envPort.trim().isEmpty()) {
+            try {
+                return Integer.parseInt(envPort.trim());
+            } catch (NumberFormatException ignored) {}
+        }
+        return 8080;
+    }
 
     public static void main(String[] args) {
+        int port = getPort();
         System.out.println("==========================================================");
         System.out.println("=== Campus Management System - Web Server Launcher ===");
         System.out.println("==========================================================");
 
         try {
-            CampusWebServer webServer = new CampusWebServer(PORT);
+            CampusWebServer webServer = new CampusWebServer(port);
             webServer.start();
 
-            String url = "http://localhost:" + PORT;
+            String url = "http://localhost:" + port;
             System.out.println("\n [READY] Web application is live!");
             System.out.println(" Open your browser and navigate to: " + url);
             System.out.println(" Press 'q' followed by Enter (or Ctrl+C) to stop the server.\n");

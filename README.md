@@ -27,6 +27,19 @@ A modular, Object-Oriented Java framework for managing sports facility reservati
 
 ---
 
+## 🏛️ Backend Architecture & Tech Stack
+
+The backend is built with **100% Pure Core Java (JDK 8+)**, intentionally structured with **zero external third-party dependencies** to adhere strictly to KTU and academic evaluation standards:
+
+| Layer | Technology | Key Classes | Responsibilities |
+| :--- | :--- | :--- | :--- |
+| **HTTP Server & REST APIs** | `com.sun.net.httpserver.HttpServer` | [`CampusWebServer`](src/com/campus/web/CampusWebServer.java), [`JsonUtils`](src/com/campus/web/JsonUtils.java) | Exposes lightweight JSON REST endpoints (`/api/*`), serves static frontend files, binds dynamically to `$PORT`. |
+| **Domain & Business Logic** | Pure Java OOP (Polymorphism, Inheritance) | [`Court`](src/com/campus/sports/Court.java), [`User`](src/com/campus/sports/User.java), [`HostelStudent`](src/com/campus/hostel/HostelStudent.java), [`Book`](src/com/campus/library/Book.java) | Enforces role quota ceilings, room tariffs, meal plans, and overdue library penalties. |
+| **Custom Checked Exceptions** | Domain Exception Subclasses | `SlotAlreadyBookedException`, `OutstandingFineException`, `BookingQuotaExceededException`, `InvalidLeaveDaysException`, `BookNotAvailableException` | Enforces business rule validation and domain integrity. |
+| **Persistence & Database** | Native Java Object Serialization (`.ser`) | [`CampusStorageManager`](src/com/campus/storage/CampusStorageManager.java), [`CampusData`](src/com/campus/storage/CampusData.java) | Saves and loads complete object graphs to `data/campus_data.ser` via `ObjectOutputStream` and `ObjectInputStream`. |
+
+---
+
 ## 📁 Project Structure
 
 ```
@@ -213,3 +226,58 @@ Executes the comprehensive 15-test verification harness covering OOP inheritance
     # Linux/macOS:
     rm -f data/campus_data.ser
     ```
+
+---
+
+## 🌐 Internet Deployment Guide
+
+You can deploy the Campus Academic Management System to the public internet using three different methods:
+
+### Method 1: Instant Client-Side Deployment (GitHub Pages — 100% Free)
+The frontend (`index.html` + `web/app.js`) features built-in fallback mock-state persistence. Anyone browsing the GitHub Pages site can test court bookings, hostel billing calculators, tab switching, and viva notes with zero server setup required.
+
+1. Navigate to your repository on GitHub: [`https://github.com/nikhilbijuk/CampusAcademicSystems`](https://github.com/nikhilbijuk/CampusAcademicSystems)
+2. Go to **Settings** > **Pages** (in the left sidebar).
+3. Under **Build and deployment** > **Branch**:
+   * Select **`main`** branch.
+   * Select **`/ (root)`** folder.
+   * Click **Save**.
+4. Within 1–2 minutes, your web application will be live at:
+   ```
+   https://nikhilbijuk.github.io/CampusAcademicSystems/
+   ```
+
+---
+
+### Method 2: Full-Stack Cloud Deployment (Render / Railway / Fly.io with Docker)
+To deploy the real Java backend with REST endpoints (`/api/*`) on the cloud, use the included [`Dockerfile`](Dockerfile).
+
+#### Deploying on Render (Free Tier):
+1. Sign up for a free account at [Render.com](https://render.com).
+2. Click **New +** > **Web Service**.
+3. Connect your GitHub repository: `CampusAcademicSystems`.
+4. Render will automatically detect the [`Dockerfile`](Dockerfile).
+5. Configure settings:
+   * **Name**: `campus-academic-systems`
+   * **Region**: Nearest to you (e.g., Singapore, Frankfurt, Oregon)
+   * **Runtime**: `Docker`
+   * **Instance Type**: `Free`
+6. Click **Create Web Service**.
+7. Render will build the OpenJDK container, start `com.campus.main.WebLauncher` on dynamic cloud `$PORT`, and provide you with a permanent HTTPS link (e.g., `https://campus-academic-systems.onrender.com`).
+
+---
+
+### Method 3: Instant Live Viva Tunneling (Localtunnel / Ngrok)
+To demonstrate your locally running Java server to an external evaluator, viva examiner, or mobile phone over public Wi-Fi without deploying to the cloud:
+
+1. Start your local Java Web Launcher:
+   ```powershell
+   java -cp bin com.campus.main.WebLauncher
+   ```
+2. Open a second terminal window and run:
+   ```bash
+   npx localtunnel --port 8080
+   ```
+   *(Or using ngrok: `ngrok http 8080`)*
+3. Share the generated public HTTPS URL (e.g., `https://clean-campus-app.loca.lt`) to access your local machine live from anywhere!
+
