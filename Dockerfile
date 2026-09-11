@@ -11,7 +11,7 @@ COPY web/ ./web/
 COPY index.html ./index.html
 RUN mkdir -p data
 
-EXPOSE 8080
+EXPOSE 8080 7860
 ENV PORT=8080
 
 CMD ["java", "-cp", "bin", "com.campus.main.WebLauncher"]

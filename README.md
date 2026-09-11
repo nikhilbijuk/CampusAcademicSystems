@@ -280,7 +280,18 @@ Because the project contains a standardized [`Dockerfile`](Dockerfile) and `WebL
   3. Render auto-selects `Docker` runtime and `Dockerfile`.
   4. Select **Free** instance type and click **Create Web Service**.
 
-#### 4. Fly.io (Global Edge Micro-VMs)
+#### 4. Hugging Face Spaces (100% Free — 16 GB RAM & 2 vCPUs)
+* **Website**: [huggingface.co/spaces](https://huggingface.co/spaces)
+* **Why**: Completely free Docker container hosting with 16 GB RAM that never runs out of memory.
+* **Steps**:
+  1. Go to [huggingface.co](https://huggingface.co) and click **New Space**.
+  2. Enter Space name: `CampusAcademicSystems`.
+  3. Select Space SDK: **Docker** > **Blank**.
+  4. Under Space Hardware, select **Free 2 vCPU · 16 GB RAM**.
+  5. Go to Space **Settings** > **Variables and secrets** > Add New Variable: `PORT` = `7860`.
+  6. Clone the HF Space repo or connect GitHub repo. Once pushed, it builds and runs live on `https://huggingface.co/spaces/<your-username>/CampusAcademicSystems`.
+
+#### 5. Fly.io (Global Edge Micro-VMs)
 * **Website**: [fly.io](https://fly.io)
 * **Steps**:
   1. Install CLI: `powershell -Command "iwr https://fly.io/install.ps1 -useb | iex"`
@@ -289,8 +300,39 @@ Because the project contains a standardized [`Dockerfile`](Dockerfile) and `WebL
 
 ---
 
+### Method 3: Cloudflare Deployment Options
 
-### Method 3: Instant Live Viva Tunneling (Localtunnel / Ngrok)
+Cloudflare offers two ways to deploy this system:
+
+#### A. Cloudflare Pages (Frontend Web Hosting — 100% Free & Unlimited Bandwidth)
+1. Sign up on [dash.cloudflare.com](https://dash.cloudflare.com).
+2. Navigate to **Compute (Workers & Pages)** > **Pages** > **Connect to Git**.
+3. Select your repository: `CampusAcademicSystems`.
+4. Build Settings:
+   * **Framework preset**: `None`
+   * **Build command**: *(leave blank)*
+   * **Build output directory**: `/`
+5. Click **Save and Deploy**. Cloudflare gives you an instant `*.pages.dev` URL backed by their global 300+ city edge network.
+
+#### B. Cloudflare Tunnel (Live Secure Tunnel from Your Laptop)
+Expose your local Java server to a public HTTPS Cloudflare link without port forwarding:
+1. Download `cloudflared` from Cloudflare or via winget:
+   ```powershell
+   winget install Cloudflare.cloudflared
+   ```
+2. Start the local Java Web Launcher:
+   ```powershell
+   java -cp bin com.campus.main.WebLauncher
+   ```
+3. In another terminal, run:
+   ```powershell
+   cloudflared tunnel --url http://localhost:8080
+   ```
+4. Cloudflare will output a free, encrypted public HTTPS link (e.g., `https://random-words.trycloudflare.com`) routing directly to your running Java server!
+
+---
+
+### Method 4: Instant Live Viva Tunneling (Localtunnel / Ngrok)
 To demonstrate your locally running Java server to an external evaluator, viva examiner, or mobile phone over public Wi-Fi without deploying to the cloud:
 
 1. Start your local Java Web Launcher:
@@ -303,4 +345,5 @@ To demonstrate your locally running Java server to an external evaluator, viva e
    ```
    *(Or using ngrok: `ngrok http 8080`)*
 3. Share the generated public HTTPS URL (e.g., `https://clean-campus-app.loca.lt`) to access your local machine live from anywhere!
+
 
