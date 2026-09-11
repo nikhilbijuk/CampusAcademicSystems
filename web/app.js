@@ -8,6 +8,31 @@ const SLOTS = [
   "17:00-18:00", "18:00-19:00", "19:00-20:00"
 ];
 
+const SEED_DATA = {
+  users: [
+    { userId: "S101", name: "Rahul Sharma", role: "Student", bookingLimit: 2, fineBalance: 0.0 },
+    { userId: "S102", name: "Priya Nair", role: "Student", bookingLimit: 2, fineBalance: 0.0 },
+    { userId: "F201", name: "Dr. Suresh Kumar", role: "Faculty", bookingLimit: 5, fineBalance: 0.0 },
+    { userId: "C301", name: "Coach Vikram", role: "Coach", bookingLimit: 10, fineBalance: 0.0 }
+  ],
+  courts: [
+    { courtId: "CRT1", courtType: "Badminton", reservations: {} },
+    { courtId: "CRT2", courtType: "Tennis", reservations: {} },
+    { courtId: "CRT3", courtType: "Basketball", reservations: {} }
+  ],
+  hostelStudents: [
+    { rollNo: "STU202", name: "Anjali Menon", roomNumber: 302, roomType: "SingleOccupancy", roomTariff: 5400.0, mealPlan: "StandardPlan", leavesThisMonth: 0, baseRate: 4500.0 },
+    { rollNo: "STU203", name: "Rohan Das", roomNumber: 101, roomType: "ACSuite", roomTariff: 7500.0, mealPlan: "SpecialDietPlan", leavesThisMonth: 0, baseRate: 6000.0 }
+  ],
+  books: [
+    { isbn: "978-0262033848", title: "Introduction to Algorithms (CLRS)", author: "Thomas H. Cormen", category: "Computer Science", available: true, borrowerId: null, borrowerName: null },
+    { isbn: "978-1118063330", title: "Operating System Concepts", author: "Abraham Silberschatz", category: "Systems", available: true, borrowerId: null, borrowerName: null },
+    { isbn: "978-0078022159", title: "Database System Concepts", author: "Henry F. Korth", category: "Databases", available: true, borrowerId: null, borrowerName: null },
+    { isbn: "978-0132126953", title: "Computer Networks", author: "Andrew S. Tanenbaum", category: "Networks", available: true, borrowerId: null, borrowerName: null },
+    { isbn: "978-0132350884", title: "Clean Code: A Handbook of Agile Software Craftsmanship", author: "Robert C. Martin", category: "Software Engineering", available: true, borrowerId: null, borrowerName: null }
+  ]
+};
+
 let state = {
   users: [],
   courts: [],
@@ -17,7 +42,8 @@ let state = {
   selectedStudentRoll: null,
   activeFineTargetUser: null,
   activeLeaveTargetStudent: null,
-  activeReturnBook: null
+  activeReturnBook: null,
+  isStandaloneMode: false
 };
 
 // ==========================================
@@ -73,33 +99,87 @@ function setupEventListeners() {
 // Data Fetching & Sync
 // ==========================================
 async function loadData() {
+  const statusBadge = document.getElementById("serverStatusBadge");
+
   try {
-    const res = await fetch("/api/data");
-    if (!res.ok) throw new Error("Failed to load campus data");
+    // Attempt connecting to Java backend
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+    const res = await fetch("/api/data", { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) throw new Error("Server returned HTTP " + res.status);
     const data = await res.json();
+
+    state.isStandaloneMode = false;
+    if (statusBadge) {
+      statusBadge.textContent = "🟢 Live Java Backend";
+      statusBadge.style.color = "var(--success)";
+      statusBadge.title = "Connected to local Java Web Server";
+    }
 
     state.users = data.users || [];
     state.courts = data.courts || [];
     state.hostelStudents = data.hostelStudents || [];
     state.books = data.books || [];
 
-    if (!state.selectedUserId && state.users.length > 0) {
-      state.selectedUserId = state.users[0].userId;
-    }
-
-    renderUserSelector();
-    renderStats();
-    renderCourts();
-    renderHostelStudents();
-    renderLibraryCatalog();
-    renderUsersGrid();
-
-    // If a student was selected for billing, refresh bill
-    if (state.selectedStudentRoll) {
-      fetchAndRenderBill(state.selectedStudentRoll);
-    }
   } catch (err) {
-    showToast("Error loading campus data: " + err.message, "error");
+    // Fallback to in-browser Standalone Web Demo Mode
+    state.isStandaloneMode = true;
+    if (statusBadge) {
+      statusBadge.textContent = "🟡 Standalone Web Demo";
+      statusBadge.style.color = "var(--warning)";
+      statusBadge.title = "Running directly in browser with LocalStorage. Run WebLauncher for Java backend.";
+    }
+
+    loadLocalStandaloneData();
+  }
+
+  if (!state.selectedUserId && state.users.length > 0) {
+    state.selectedUserId = state.users[0].userId;
+  }
+
+  renderUserSelector();
+  renderStats();
+  renderCourts();
+  renderHostelStudents();
+  renderLibraryCatalog();
+  renderUsersGrid();
+
+  if (state.selectedStudentRoll) {
+    fetchAndRenderBill(state.selectedStudentRoll);
+  }
+}
+
+function loadLocalStandaloneData() {
+  const saved = localStorage.getItem("campus_standalone_data");
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      state.users = parsed.users || SEED_DATA.users;
+      state.courts = parsed.courts || SEED_DATA.courts;
+      state.hostelStudents = parsed.hostelStudents || SEED_DATA.hostelStudents;
+      state.books = parsed.books || SEED_DATA.books;
+      return;
+    } catch (e) {}
+  }
+  // Initialize from seed
+  state.users = JSON.parse(JSON.stringify(SEED_DATA.users));
+  state.courts = JSON.parse(JSON.stringify(SEED_DATA.courts));
+  state.hostelStudents = JSON.parse(JSON.stringify(SEED_DATA.hostelStudents));
+  state.books = JSON.parse(JSON.stringify(SEED_DATA.books));
+  saveLocalStandaloneData();
+}
+
+function saveLocalStandaloneData() {
+  if (state.isStandaloneMode) {
+    localStorage.setItem("campus_standalone_data", JSON.stringify({
+      users: state.users,
+      courts: state.courts,
+      hostelStudents: state.hostelStudents,
+      books: state.books
+    }));
   }
 }
 
@@ -220,8 +300,9 @@ async function handleSlotClick(courtId, slot, isBooked, bookedUserId) {
     return;
   }
 
+  const currentUser = state.users.find(u => u.userId === state.selectedUserId);
+
   if (isBooked) {
-    // Attempt cancellation
     const isOwner = bookedUserId && bookedUserId.toLowerCase() === state.selectedUserId.toLowerCase();
     const promptMsg = isOwner
       ? `Cancel your reservation for slot '${slot}' on court ${courtId}?`
@@ -229,15 +310,22 @@ async function handleSlotClick(courtId, slot, isBooked, bookedUserId) {
 
     if (!confirm(promptMsg)) return;
 
+    if (state.isStandaloneMode) {
+      const targetCourt = state.courts.find(c => c.courtId === courtId);
+      if (targetCourt && targetCourt.reservations) {
+        delete targetCourt.reservations[slot];
+        saveLocalStandaloneData();
+        showToast(`Slot '${slot}' released successfully on ${courtId}.`, "success");
+        loadData();
+      }
+      return;
+    }
+
     try {
       const res = await fetch("/api/release", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          courtId: courtId,
-          slot: slot,
-          userId: state.selectedUserId
-        })
+        body: JSON.stringify({ courtId, slot, userId: state.selectedUserId })
       });
       const data = await res.json();
       if (data.success) {
@@ -251,15 +339,38 @@ async function handleSlotClick(courtId, slot, isBooked, bookedUserId) {
     }
   } else {
     // Attempt reservation
+    if (state.isStandaloneMode) {
+      // 1. Check fine
+      if (currentUser.fineBalance > 0) {
+        showToast(`Outstanding fine hold: ${currentUser.name} has unpaid fines of Rs. ${currentUser.fineBalance.toFixed(2)}. Reservations blocked!`, "error");
+        return;
+      }
+      // 2. Check quota
+      let userBookings = 0;
+      state.courts.forEach(c => {
+        Object.values(c.reservations || {}).forEach(r => {
+          if (r && r.userId === currentUser.userId) userBookings++;
+        });
+      });
+      if (userBookings >= currentUser.bookingLimit) {
+        showToast(`Quota exceeded: ${currentUser.name} has reached maximum booking limit (${userBookings}/${currentUser.bookingLimit}).`, "error");
+        return;
+      }
+      // Reserve
+      const targetCourt = state.courts.find(c => c.courtId === courtId);
+      if (!targetCourt.reservations) targetCourt.reservations = {};
+      targetCourt.reservations[slot] = { userId: currentUser.userId, name: currentUser.name };
+      saveLocalStandaloneData();
+      showToast(`Slot '${slot}' reserved successfully for ${currentUser.name}!`, "success");
+      loadData();
+      return;
+    }
+
     try {
       const res = await fetch("/api/reserve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          courtId: courtId,
-          slot: slot,
-          userId: state.selectedUserId
-        })
+        body: JSON.stringify({ courtId, slot, userId: state.selectedUserId })
       });
       const data = await res.json();
       if (data.success) {
@@ -314,7 +425,6 @@ function renderHostelStudents() {
     container.appendChild(card);
   });
 
-  // Auto-select first student if none selected
   if (!state.selectedStudentRoll && state.hostelStudents.length > 0) {
     state.selectedStudentRoll = state.hostelStudents[0].rollNo;
     fetchAndRenderBill(state.selectedStudentRoll);
@@ -322,58 +432,86 @@ function renderHostelStudents() {
 }
 
 async function fetchAndRenderBill(rollNo) {
-  try {
-    const res = await fetch(`/api/hostel/bill?rollNo=${encodeURIComponent(rollNo)}&monthDays=30`);
-    if (!res.ok) return;
-    const bill = await res.json();
+  let bill = null;
 
-    document.getElementById("billPlaceholder").classList.add("hidden");
-    const container = document.getElementById("billContainer");
-    container.classList.remove("hidden");
+  if (state.isStandaloneMode) {
+    const student = state.hostelStudents.find(s => s.rollNo === rollNo);
+    if (!student) return;
 
-    container.innerHTML = `
-      <div class="invoice">
-        <div class="invoice-row">
-          <span>Student Name / Roll:</span>
-          <strong>${bill.name} (${bill.rollNo})</strong>
-        </div>
-        <div class="invoice-row">
-          <span>Room Model:</span>
-          <span>${bill.roomType} (Room ${bill.roomNumber})</span>
-        </div>
-        <div class="invoice-row">
-          <span>Room Charges:</span>
-          <strong>Rs. ${bill.roomCost.toFixed(2)}</strong>
-        </div>
-        <div class="invoice-row">
-          <span>Meal Plan:</span>
-          <span>${bill.mealPlan}</span>
-        </div>
-        <div class="invoice-row">
-          <span>Month Cycle / Leaves:</span>
-          <span>${bill.monthDays} days total - ${bill.leavesThisMonth} leaves deducted</span>
-        </div>
-        <div class="invoice-row">
-          <span>Mess Cost (Billed Days):</span>
-          <strong>Rs. ${bill.messCost.toFixed(2)}</strong>
-        </div>
-        <div class="invoice-row total-row">
-          <span>Total Monthly Amount Due:</span>
-          <span>Rs. ${bill.totalDue.toFixed(2)}</span>
-        </div>
-      </div>
-      <div class="invoice-controls">
-        <button class="btn btn-secondary btn-sm" onclick="window.print()">
-          🖨️ Print Receipt
-        </button>
-        <button class="btn btn-secondary btn-sm" onclick="openLeaveModal('${bill.rollNo}', '${bill.name}')">
-          ➕ Add Leave Days
-        </button>
-      </div>
-    `;
-  } catch (err) {
-    console.error("Error fetching bill", err);
+    const baseRate = student.baseRate || 4500.0;
+    const roomCost = student.roomType === "ACSuite" ? baseRate + 1500.0 : baseRate * 1.2;
+    const dailyMessRate = student.mealPlan === "SpecialDietPlan" ? 150.0 : 120.0;
+    const activeMessDays = Math.max(0, 30 - student.leavesThisMonth);
+    let messCost = activeMessDays * dailyMessRate;
+    if (student.mealPlan === "SpecialDietPlan") messCost += 500.0;
+
+    bill = {
+      rollNo: student.rollNo,
+      name: student.name,
+      roomType: student.roomType,
+      roomNumber: student.roomNumber,
+      roomCost: roomCost,
+      mealPlan: student.mealPlan,
+      leavesThisMonth: student.leavesThisMonth,
+      monthDays: 30,
+      messCost: messCost,
+      totalDue: roomCost + messCost
+    };
+  } else {
+    try {
+      const res = await fetch(`/api/hostel/bill?rollNo=${encodeURIComponent(rollNo)}&monthDays=30`);
+      if (res.ok) {
+        bill = await res.json();
+      }
+    } catch (err) {}
   }
+
+  if (!bill) return;
+
+  document.getElementById("billPlaceholder").classList.add("hidden");
+  const container = document.getElementById("billContainer");
+  container.classList.remove("hidden");
+
+  container.innerHTML = `
+    <div class="invoice">
+      <div class="invoice-row">
+        <span>Student Name / Roll:</span>
+        <strong>${bill.name} (${bill.rollNo})</strong>
+      </div>
+      <div class="invoice-row">
+        <span>Room Model:</span>
+        <span>${bill.roomType} (Room ${bill.roomNumber})</span>
+      </div>
+      <div class="invoice-row">
+        <span>Room Charges:</span>
+        <strong>Rs. ${bill.roomCost.toFixed(2)}</strong>
+      </div>
+      <div class="invoice-row">
+        <span>Meal Plan:</span>
+        <span>${bill.mealPlan}</span>
+      </div>
+      <div class="invoice-row">
+        <span>Month Cycle / Leaves:</span>
+        <span>${bill.monthDays} days total - ${bill.leavesThisMonth} leaves deducted</span>
+      </div>
+      <div class="invoice-row">
+        <span>Mess Cost (Billed Days):</span>
+        <strong>Rs. ${bill.messCost.toFixed(2)}</strong>
+      </div>
+      <div class="invoice-row total-row">
+        <span>Total Monthly Amount Due:</span>
+        <span>Rs. ${bill.totalDue.toFixed(2)}</span>
+      </div>
+    </div>
+    <div class="invoice-controls">
+      <button class="btn btn-secondary btn-sm" onclick="window.print()">
+        🖨️ Print Receipt
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="openLeaveModal('${bill.rollNo}', '${bill.name}')">
+        ➕ Add Leave Days
+      </button>
+    </div>
+  `;
 }
 
 function openLeaveModal(rollNo, name) {
@@ -384,9 +522,25 @@ function openLeaveModal(rollNo, name) {
 }
 
 async function handleSubmitLeave() {
-  const days = document.getElementById("leaveDaysInput").value;
-  if (!days || days < 1) {
-    showToast("Please enter a valid number of days.", "error");
+  const daysInput = document.getElementById("leaveDaysInput").value;
+  const days = parseInt(daysInput, 10);
+  if (isNaN(days) || days < 1) {
+    showToast("Please enter a valid number of days (at least 1).", "error");
+    return;
+  }
+
+  if (state.isStandaloneMode) {
+    const student = state.hostelStudents.find(s => s.rollNo === state.activeLeaveTargetStudent);
+    if (!student) return;
+    if (student.leavesThisMonth + days > 30) {
+      showToast(`Invalid leave: Total leaves (${student.leavesThisMonth + days}) cannot exceed month days (30).`, "error");
+      return;
+    }
+    student.leavesThisMonth += days;
+    saveLocalStandaloneData();
+    showToast(`Applied ${days} days leave for ${student.name}.`, "success");
+    closeModal("leaveModal");
+    loadData();
     return;
   }
 
@@ -417,12 +571,37 @@ async function handleRegisterHostelStudent() {
   const roll = document.getElementById("regRoll").value.trim();
   const name = document.getElementById("regName").value.trim();
   const roomType = document.getElementById("regRoomType").value;
-  const roomNum = document.getElementById("regRoomNum").value.trim();
-  const baseRate = document.getElementById("regBaseRate").value.trim();
+  const roomNum = parseInt(document.getElementById("regRoomNum").value.trim(), 10);
+  const baseRate = parseFloat(document.getElementById("regBaseRate").value.trim()) || 4500.0;
   const mealPlan = document.getElementById("regMealPlan").value;
 
-  if (!roll || !name || !roomNum) {
+  if (!roll || !name || isNaN(roomNum)) {
     showToast("Please fill in Roll No, Name, and Room Number.", "error");
+    return;
+  }
+
+  if (state.isStandaloneMode) {
+    const exists = state.hostelStudents.some(s => s.rollNo.toLowerCase() === roll.toLowerCase());
+    if (exists) {
+      showToast(`Student with roll ${roll} is already registered.`, "error");
+      return;
+    }
+    const roomTariff = roomType === "ACSuite" ? baseRate + 1500.0 : baseRate * 1.2;
+    state.hostelStudents.push({
+      rollNo: roll,
+      name: name,
+      roomNumber: roomNum,
+      roomType: roomType,
+      roomTariff: roomTariff,
+      mealPlan: mealPlan,
+      leavesThisMonth: 0,
+      baseRate: baseRate
+    });
+    saveLocalStandaloneData();
+    showToast(`Registered hostel student ${name} (${roll})!`, "success");
+    closeModal("registerModal");
+    state.selectedStudentRoll = roll;
+    loadData();
     return;
   }
 
@@ -516,14 +695,38 @@ async function handleBorrowBook(isbn) {
     return;
   }
 
+  const currentUser = state.users.find(u => u.userId === state.selectedUserId);
+
+  if (state.isStandaloneMode) {
+    const book = state.books.find(b => b.isbn === isbn);
+    if (!book || !book.available) {
+      showToast("Book is not currently available.", "error");
+      return;
+    }
+    if (currentUser.fineBalance > 0) {
+      showToast(`Library hold: ${currentUser.name} has unpaid fines of Rs. ${currentUser.fineBalance.toFixed(2)}. Borrowing blocked!`, "error");
+      return;
+    }
+    const userLoans = state.books.filter(b => !b.available && b.borrowerId === currentUser.userId).length;
+    const maxLoans = currentUser.role === "Student" ? 3 : 10;
+    if (userLoans >= maxLoans) {
+      showToast(`Borrowing quota exceeded: ${currentUser.name} already has ${userLoans} active book loans (Limit: ${maxLoans}).`, "error");
+      return;
+    }
+    book.available = false;
+    book.borrowerId = currentUser.userId;
+    book.borrowerName = currentUser.name;
+    saveLocalStandaloneData();
+    showToast(`Book '${book.title}' checked out to ${currentUser.name}!`, "success");
+    loadData();
+    return;
+  }
+
   try {
     const res = await fetch("/api/library/borrow", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        isbn: isbn,
-        userId: state.selectedUserId
-      })
+      body: JSON.stringify({ isbn, userId: state.selectedUserId })
     });
     const data = await res.json();
     if (data.success) {
@@ -549,7 +752,32 @@ function openReturnModal(isbn, title, borrowerName, borrowerId) {
 async function handleSubmitReturnBook() {
   if (!state.activeReturnBook) return;
 
-  const days = document.getElementById("returnOverdueDays").value || 0;
+  const daysInput = document.getElementById("returnOverdueDays").value;
+  const days = Math.max(0, parseInt(daysInput, 10) || 0);
+
+  if (state.isStandaloneMode) {
+    const book = state.books.find(b => b.isbn === state.activeReturnBook.isbn);
+    if (!book) return;
+    const borrower = state.users.find(u => u.userId === state.activeReturnBook.borrowerId);
+    book.available = true;
+    book.borrowerId = null;
+    book.borrowerName = null;
+
+    const fineCharged = days * 5.0;
+    if (fineCharged > 0 && borrower) {
+      borrower.fineBalance += fineCharged;
+    }
+    saveLocalStandaloneData();
+    closeModal("returnModal");
+
+    if (fineCharged > 0 && borrower) {
+      showToast(`Book returned! Overdue fine of Rs. ${fineCharged.toFixed(2)} added to ${borrower.name}'s campus account. (Sports court bookings now locked until paid!)`, "error");
+    } else {
+      showToast(`Book '${book.title}' successfully returned.`, "success");
+    }
+    loadData();
+    return;
+  }
 
   try {
     const res = await fetch("/api/library/return", {
@@ -631,10 +859,27 @@ function openFineModal(userId, name, defaultAction) {
 
 async function handleSubmitFine() {
   const action = document.getElementById("fineAction").value;
-  const amount = document.getElementById("fineAmount").value;
+  const amountInput = document.getElementById("fineAmount").value;
+  const amount = parseFloat(amountInput);
 
-  if (!amount || amount <= 0) {
+  if (isNaN(amount) || amount <= 0) {
     showToast("Please enter a valid positive amount.", "error");
+    return;
+  }
+
+  if (state.isStandaloneMode) {
+    const user = state.users.find(u => u.userId === state.activeFineTargetUser);
+    if (user) {
+      if (action === "add") {
+        user.fineBalance += amount;
+      } else {
+        user.fineBalance = Math.max(0, user.fineBalance - amount);
+      }
+      saveLocalStandaloneData();
+      showToast(`Fine updated! New balance for ${user.name}: Rs. ${user.fineBalance.toFixed(2)}`, "success");
+      closeModal("fineModal");
+      loadData();
+    }
     return;
   }
 
@@ -665,6 +910,12 @@ async function handleSubmitFine() {
 // Save State
 // ==========================================
 async function saveSystemState() {
+  if (state.isStandaloneMode) {
+    saveLocalStandaloneData();
+    showToast("State persisted to browser storage! (To save to .ser file, run WebLauncher).", "success");
+    return;
+  }
+
   try {
     const res = await fetch("/api/save", { method: "POST" });
     const data = await res.json();
@@ -699,5 +950,5 @@ function showToast(message, type = "success") {
   if (toastTimeout) clearTimeout(toastTimeout);
   toastTimeout = setTimeout(() => {
     toast.classList.add("hidden");
-  }, 4000);
+  }, 4500);
 }

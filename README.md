@@ -48,25 +48,37 @@ CampusAcademicSystems/
 └── README.md
 ```
 
-## ⚡ Quick Start: Run Locally in 2 Steps
+## ⚡ Quick Start: 3 Ways to Run the Web Version
 
-If you just want to run the application immediately on your machine:
+### 🖱️ Option 1: 1-Click Launch (Easiest for Windows)
+Simply double-click the **`start-web.bat`** file in your project folder!  
+It will automatically compile the code, start the server, and pop open your browser to **[http://localhost:8080](http://localhost:8080)**.
 
-1. **Open your Terminal / PowerShell** in this project folder:
+*(On Linux / macOS, run `./start-web.sh`)*
+
+---
+
+### 💻 Option 2: Terminal Command
+1. Open PowerShell or Terminal in this folder:
    ```powershell
    cd CampusAcademicSystems
    ```
-2. **Start the Web Dashboard**:
+2. Start the web server:
    ```powershell
    java -cp bin com.campus.main.WebLauncher
    ```
-3. **Open in Browser**:
-   Your default browser will pop open automatically to:  
-   👉 **[http://localhost:8080](http://localhost:8080)**  
-   *(To stop the server when done, type `q` and press `Enter`, or press `Ctrl + C`)*
+3. Open your browser: **[http://localhost:8080](http://localhost:8080)**  
+   *(To stop the server, press `q` and `Enter`, or press `Ctrl + C`)*
+
+---
+
+### 🌐 Option 3: Zero-Setup In-Browser Web Demo
+You can also open the dashboard **without running any commands or even installing Java**:
+* Simply double-click [`web/index.html`](file:///c:/Users/Nikhil%20Biju/.gemini/antigravity-ide/scratch/CampusAcademicSystems/web/index.html) in your file manager to open it in Chrome, Edge, or Firefox!
+* Or host it as a free live website via **GitHub Pages** (Settings ➔ Pages ➔ Source: `main` branch / root).
 
 > [!NOTE]
-> All `.class` files are already pre-compiled into `bin/`. If you ever edit Java source code and need to recompile, see the full compilation steps below.
+> When the Java backend is active (`WebLauncher`), the web app connects to the Java server and `.ser` database. When running standalone, it automatically uses client-side storage so it remains 100% interactive anywhere!
 
 ---
 
