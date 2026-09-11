@@ -1,10 +1,10 @@
-# Dockerfile for deploying Campus Academic Systems to Render / Railway / Fly.io / Cloud
-FROM openjdk:17-jdk-slim AS builder
+# Dockerfile for deploying Campus Academic Systems to Render / Railway / Back4App / Cloud
+FROM eclipse-temurin:17-jdk AS builder
 WORKDIR /app
 COPY src/ ./src/
 RUN mkdir -p bin && javac -d bin $(find src -name "*.java")
 
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=builder /app/bin ./bin
 COPY web/ ./web/
