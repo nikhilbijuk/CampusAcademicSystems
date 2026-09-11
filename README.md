@@ -1,5 +1,7 @@
 # Campus Academic Management System (KTU Mini Project Framework)
 
+> 🚀 **Live Cloud Deployment (Docker Backend)**: [https://campusacademicsystems-ccjf7nuu.b4a.run/](https://campusacademicsystems-ccjf7nuu.b4a.run/)
+
 A modular, Object-Oriented Java framework for managing sports facility reservations, user quotas, leave tracking, and hostel mess billing. Designed to adhere to APJ Abdul Kalam Technological University (KTU) academic project standards.
 
 ##  Features
