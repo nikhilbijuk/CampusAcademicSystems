@@ -7,7 +7,12 @@ import java.util.Scanner;
 
 public class WebLauncher {
 
-    private static int getPort() {
+    private static int getPort(String[] args) {
+        if (args != null && args.length > 0 && args[0] != null && !args[0].trim().isEmpty()) {
+            try {
+                return Integer.parseInt(args[0].trim());
+            } catch (NumberFormatException ignored) {}
+        }
         String envPort = System.getenv("PORT");
         if (envPort != null && !envPort.trim().isEmpty()) {
             try {
@@ -18,7 +23,7 @@ public class WebLauncher {
     }
 
     public static void main(String[] args) {
-        int port = getPort();
+        int port = getPort(args);
         System.out.println("==========================================================");
         System.out.println("=== Campus Management System - Web Server Launcher ===");
         System.out.println("==========================================================");

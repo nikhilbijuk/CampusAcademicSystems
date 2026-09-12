@@ -625,7 +625,7 @@ public class CampusWebServer {
                         activeLoans++;
                     }
                 }
-                int maxBooks = (targetUser instanceof Student) ? 3 : 10;
+                int maxBooks = (targetUser instanceof Student) ? 3 : (targetUser instanceof Coach ? 5 : 10);
                 if (activeLoans >= maxBooks) {
                     sendResponse(exchange, 429, "{\"success\":false,\"error\":\"Borrowing limit exceeded: " + JsonUtils.escapeJson(targetUser.getName()) + " already has " + activeLoans + " active book loans (Limit: " + maxBooks + ")\"}", "application/json");
                     return;
@@ -633,7 +633,7 @@ public class CampusWebServer {
 
                 // Issue book
                 String loanId = "LN" + (data.getLibraryLoans().size() + 101);
-                int loanDays = (targetUser instanceof Student) ? 14 : 30;
+                int loanDays = (targetUser instanceof Student) ? 14 : (targetUser instanceof Coach ? 21 : 30);
                 LibraryLoan loan = new LibraryLoan(loanId, targetBook, targetUser, loanDays);
                 data.getLibraryLoans().add(loan);
 
@@ -723,8 +723,11 @@ public class CampusWebServer {
                 path = "/index.html";
             }
 
-            File file = new File(STATIC_DIR, path.substring(1));
-            if (!file.exists() || file.isDirectory()) {
+            File staticBase = new File(STATIC_DIR).getCanonicalFile();
+            File file = new File(staticBase, path.substring(1)).getCanonicalFile();
+
+            // Prevent path traversal outside static directory
+            if (!file.getPath().startsWith(staticBase.getPath()) || !file.exists() || file.isDirectory()) {
                 sendResponse(exchange, 404, "404 Not Found", "text/plain");
                 return;
             }
