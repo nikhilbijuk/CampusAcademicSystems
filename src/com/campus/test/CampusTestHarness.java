@@ -257,7 +257,6 @@ public class CampusTestHarness {
         try {
             Book book = new Book("978-1118063330", "Operating System Concepts", "Silberschatz", "Systems");
             User u1 = new Student("S101", "Rahul");
-            User u2 = new Student("S102", "Priya");
 
             new LibraryLoan("LN102", book, u1, 14);
             if (!book.isAvailable()) {

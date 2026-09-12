@@ -2,7 +2,6 @@ package com.campus.gui;
 
 import com.campus.academic.*;
 import com.campus.db.CampusDao;
-import com.campus.db.DatabaseManager;
 import com.campus.exceptions.*;
 import com.campus.hostel.*;
 import com.campus.library.Book;
