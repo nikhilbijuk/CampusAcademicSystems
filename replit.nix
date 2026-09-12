@@ -1,6 +1,6 @@
 { pkgs }: {
   deps = [
-    pkgs.jdk17
+    pkgs.openjdk17
     pkgs.bash
   ];
 }
