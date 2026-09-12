@@ -1,5 +1,6 @@
 bin/
 data/
+lib/*.jar
 *.class
 *.ser
 .DS_Store

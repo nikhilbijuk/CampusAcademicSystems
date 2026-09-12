@@ -24,4 +24,8 @@ public abstract class User implements Serializable {
     public void clearFine() { this.fineBalance = 0.0; }
     
     public abstract int getBookingLimit(); 
+
+    public String getRole() {
+        return getClass().getSimpleName();
+    }
 }

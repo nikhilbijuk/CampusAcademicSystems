@@ -25,6 +25,10 @@ public class Court implements Reservable, Serializable {
     public String getCourtType() { return courtType; }
     public Map<String, User> getSlotReservations() { return Collections.unmodifiableMap(slotReservations); }
 
+    public void assignReservation(String slot, User user) {
+        slotReservations.put(slot, user);
+    }
+
     @Override
     public boolean checkAvailability(String slot) {
         return !slotReservations.containsKey(slot);

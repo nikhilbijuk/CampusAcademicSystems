@@ -10,6 +10,17 @@ A modular, Object-Oriented Java framework for managing sports facility reservati
 
 ##  Features
 
+- **KTU Academic Performance & Attendance Module (New - Option A)**:
+  - Subject-level attendance percentage tracking with mandatory **75% KTU minimum threshold** warnings (`LowAttendanceException`).
+  - Three-tier status classification: *Eligible* ($\ge 75\%$), *Condonation Required* ($60\%-74\%$), and *Detained Shortage* ($< 60\%$).
+  - Continuous Internal Evaluation (**CIE**) calculation out of 50 marks: Series Test 1 (max 20), Series Test 2 (max 20), and Assignments/Tutorials (max 10) with `InvalidMarkException` validation.
+  - Official KTU 10-point credit grading system ($S=10.0, A^+=9.0, A=8.5, B^+=8.0, B=7.5, C^+=7.0, C=6.5, D=6.0, P=5.5, F/FE=0.0$).
+  - Credit-weighted Semester Grade Point Average (**SGPA**) engine: $\text{SGPA} = \frac{\sum (C_i \times G_i)}{\sum C_i}$ with academic honours/classification detection.
+- **Desktop Graphical User Interface (Java Swing + SQLite JDBC - Module 4 / CO5)**:
+  - Clean desktop interface built with Java Swing (`JFrame`, `JTable`, `JTabbedPane`, `JOptionPane`).
+  - Thread-safe **Singleton Design Pattern** [`DatabaseManager`](src/com/campus/db/DatabaseManager.java) with Double-Checked Locking.
+  - Relational persistence with SQLite JDBC driver (`lib/sqlite-jdbc-3.45.1.0.jar`) across 10 normalized tables.
+  - 1-click launcher scripts: `start-gui.bat` (Windows) and `start-gui.sh` (Linux/macOS).
 - **Sports Facility Reservation**:
   - Court slot reservation with collision detection.
   - Quota enforcement per role (`Student`: max 2, `Faculty`: max 5, `Coach`: max 10).
@@ -22,14 +33,14 @@ A modular, Object-Oriented Java framework for managing sports facility reservati
   - Itemized monthly bill generator with leave deductions.
 - **Campus Library Module (Cross-Module Unified Fine Engine)**:
   - Textbook catalog management (`Book`, `LibraryLoan`) with role checkout quotas (`Student`: max 3 books, `Faculty`: max 10 books).
-  - Overdue return calculation (`Rs. 5.00 / day`).
+  - Overdue return calculation (`Rs. 2.00 / day`).
   - Cross-module fine propagation: overdue library fines automatically link to `User.getFineBalance()`, instantly freezing sports court bookings until cleared.
 - **Persistence & Storage**:
-  - Native Java Object Serialization (`.ser`) for saving/loading system state automatically.
-  - Built-in data seed routines for fresh initializations.
+  - SQLite Relational Database via JDBC (`data/campus.db`).
+  - Native Java Object Serialization (`.ser`) fallback for cross-platform zero-dependency mode.
 - **Interactive CLI & Unit Tests**:
-  - Full-featured 9-option interactive command-line interface.
-  - Automated 15-case unit test suite (`CampusTestHarness`).
+  - Full-featured interactive command-line interface.
+  - Automated 19-case unit test suite (`CampusTestHarness`) covering core OOP, exceptions, cross-module constraints, and KTU academic logic.
 
 ---
 
@@ -39,10 +50,25 @@ The backend is built with **100% Pure Core Java (JDK 8+)**, intentionally struct
 
 | Layer | Technology | Key Classes | Responsibilities |
 | :--- | :--- | :--- | :--- |
+| **Desktop GUI (Module 4 / CO5)** | Java Swing (`JFrame`, `JTable`, `JTabbedPane`) | [`CampusSwingApp`](src/com/campus/gui/CampusSwingApp.java) | Native event-driven desktop GUI with tabs for Sports, Hostel, Library, and KTU Academics. |
+| **Relational Database & DAO** | SQLite JDBC via `lib/sqlite-jdbc-3.45.1.0.jar` | [`DatabaseManager`](src/com/campus/db/DatabaseManager.java), [`CampusDao`](src/com/campus/db/CampusDao.java) | Thread-safe Singleton DB connection, 10 normalized SQL tables, CRUD queries, and object mapping. |
+| **KTU Academic Performance & Attendance** | Pure Java OOP & KTU B.Tech Regulations | [`Course`](src/com/campus/academic/Course.java), [`AttendanceRecord`](src/com/campus/academic/AttendanceRecord.java), [`InternalAssessment`](src/com/campus/academic/InternalAssessment.java), [`KtuGrade`](src/com/campus/academic/KtuGrade.java), [`AcademicProfile`](src/com/campus/academic/AcademicProfile.java) | Computes subject attendance (75% threshold), CIE out of 50, and credit-weighted SGPA on KTU 10-point scale. |
 | **HTTP Server & REST APIs** | `com.sun.net.httpserver.HttpServer` | [`CampusWebServer`](src/com/campus/web/CampusWebServer.java), [`JsonUtils`](src/com/campus/web/JsonUtils.java) | Exposes lightweight JSON REST endpoints (`/api/*`), serves static frontend files, binds dynamically to `$PORT`. |
 | **Domain & Business Logic** | Pure Java OOP (Polymorphism, Inheritance) | [`Court`](src/com/campus/sports/Court.java), [`User`](src/com/campus/sports/User.java), [`HostelStudent`](src/com/campus/hostel/HostelStudent.java), [`Book`](src/com/campus/library/Book.java) | Enforces role quota ceilings, room tariffs, meal plans, and overdue library penalties. |
-| **Custom Checked Exceptions** | Domain Exception Subclasses | `SlotAlreadyBookedException`, `OutstandingFineException`, `BookingQuotaExceededException`, `InvalidLeaveDaysException`, `BookNotAvailableException` | Enforces business rule validation and domain integrity. |
-| **Persistence & Database** | Native Java Object Serialization (`.ser`) | [`CampusStorageManager`](src/com/campus/storage/CampusStorageManager.java), [`CampusData`](src/com/campus/storage/CampusData.java) | Saves and loads complete object graphs to `data/campus_data.ser` via `ObjectOutputStream` and `ObjectInputStream`. |
+| **Custom Checked Exceptions** | Domain Exception Subclasses | `SlotAlreadyBookedException`, `OutstandingFineException`, `BookingQuotaExceededException`, `InvalidLeaveDaysException`, `BookNotAvailableException`, `LowAttendanceException`, `InvalidMarkException` | Enforces business rule validation and domain integrity. |
+| **Serialization Fallback** | Native Java Object Serialization (`.ser`) | [`CampusStorageManager`](src/com/campus/storage/CampusStorageManager.java), [`CampusData`](src/com/campus/storage/CampusData.java) | Saves and loads complete object graphs to `data/campus_data.ser` via `ObjectOutputStream` and `ObjectInputStream`. |
+
+---
+
+## 🎯 SOLID Principles Mapping (KTU PBCST304)
+
+| Principle | Meaning in Object-Oriented Design | How It Is Applied in this Project |
+| :--- | :--- | :--- |
+| **S - Single Responsibility Principle (SRP)** | Every class should have one, and only one, reason to change. | • [`AttendanceRecord`](src/com/campus/academic/AttendanceRecord.java) handles *only* class attendance counting and 75% threshold checks.<br>• [`InternalAssessment`](src/com/campus/academic/InternalAssessment.java) handles *only* CIE marks calculation.<br>• [`DatabaseManager`](src/com/campus/db/DatabaseManager.java) handles *only* DB connection pooling and schema initialization.<br>• [`CampusDao`](src/com/campus/db/CampusDao.java) handles *only* data persistence queries. |
+| **O - Open/Closed Principle (OCP)** | Software entities should be open for extension, but closed for modification. | • [`BaseRoom`](src/com/campus/hostel/BaseRoom.java) is extended by [`SingleOccupancy`](src/com/campus/hostel/SingleOccupancy.java) and [`ACSuite`](src/com/campus/hostel/ACSuite.java). New room types (e.g., `DeluxeSuite`) can be added without modifying existing room logic.<br>• [`MealPlan`](src/com/campus/hostel/MealPlan.java) is extended by [`StandardPlan`](src/com/campus/hostel/StandardPlan.java) and [`SpecialDietPlan`](src/com/campus/hostel/SpecialDietPlan.java). |
+| **L - Liskov Substitution Principle (LSP)** | Subclasses must be substitutable for their base classes without breaking correctness. | • Any subclass of [`User`](src/com/campus/sports/User.java) ([`Student`](src/com/campus/sports/Student.java), [`Faculty`](src/com/campus/sports/Faculty.java), [`Coach`](src/com/campus/sports/Coach.java)) can be passed polymorphically to `Court.reserve(slot, user, allCourts)`. Each respects `getBookingLimit()` without special-case branching. |
+| **I - Interface Segregation Principle (ISP)** | Clients should not be forced to depend upon interfaces that they do not use. | • [`Reservable`](src/com/campus/sports/Reservable.java) interface defines only facility reservation methods (`checkAvailability`, `reserve`, `release`). It does not force mess or library methods onto sports facilities. |
+| **D - Dependency Inversion Principle (DIP)** | High-level modules should depend on abstractions, not on concrete details. | • [`HostelStudent`](src/com/campus/hostel/HostelStudent.java) depends on the abstract classes `BaseRoom` and `MealPlan`, rather than hardcoded concrete types. |
 
 ---
 
@@ -53,19 +79,56 @@ CampusAcademicSystems/
 ├── src/
 │   └── com/
 │       └── campus/
-│           ├── exceptions/      # Custom Exception classes
+│           ├── academic/        # Course, AttendanceRecord, InternalAssessment, KtuGrade, AcademicProfile
+│           ├── db/              # DatabaseManager (Singleton), CampusDao (JDBC CRUD)
+│           ├── exceptions/      # Custom checked exceptions (LowAttendance, InvalidMark, etc.)
+│           ├── gui/             # CampusSwingApp (Java Swing desktop GUI)
 │           ├── hostel/          # BaseRoom, SingleOccupancy, ACSuite, MealPlan, HostelStudent
 │           ├── library/         # Book, LibraryLoan
 │           ├── sports/          # User, Student, Faculty, Coach, Reservable, Court
-│           ├── storage/         # CampusData, CampusStorageManager
+│           ├── storage/         # CampusData, CampusStorageManager (Serialization)
 │           ├── web/             # CampusWebServer, JsonUtils
-│           ├── test/            # CampusTestHarness
-│           └── main/            # MainApp (CLI), WebLauncher (Web UI)
+│           ├── test/            # CampusTestHarness (19 automated unit tests)
+│           └── main/            # MainApp (CLI), WebLauncher (Web server)
+├── lib/                         # sqlite-jdbc-3.45.1.0.jar
 ├── web/                         # Modern Web Dashboard (HTML, CSS, JS)
 ├── bin/                         # Compiled bytecode (.class)
-├── data/                        # Serialized storage (.ser)
+├── data/                        # SQLite DB (campus.db) & Serialized storage (.ser)
+├── start-gui.bat / .sh          # 1-Click Launchers for Java Swing Desktop GUI
+├── start-web.bat / .sh          # 1-Click Launchers for Web Dashboard
 └── README.md
 ```
+
+---
+
+## 🖥️ Running the Java Swing Desktop GUI (KTU PBCST304 Module 4 / CO5)
+
+The project includes an event-driven desktop GUI built with **Java Swing** backed by a **SQLite JDBC database layer** using the **Singleton Design Pattern**:
+
+### 🖱️ Option 1: 1-Click Launch (Recommended for Viva)
+* **Windows**: Double-click [`start-gui.bat`](start-gui.bat)
+* **Linux / macOS**: Run `./start-gui.sh` in terminal
+
+### 💻 Option 2: Terminal Launch
+```powershell
+# Compile all sources with SQLite JDBC driver
+javac -cp ".;lib/*" -d bin (Get-ChildItem -Recurse -Filter *.java src | Select-Object -ExpandProperty FullName)
+
+# Launch Desktop GUI
+java -cp "bin;lib/*" com.campus.gui.CampusSwingApp
+```
+*(On Linux/macOS, use `:` instead of `;` in the classpath: `java -cp "bin:lib/*" com.campus.gui.CampusSwingApp`)*
+
+### 🌟 Desktop Tabs Overview:
+1. **🏟️ Sports Facilities**: Live court reservations, slot collision detection, fine status indicator, and instant cancellation.
+2. **🏨 Hostel & Mess Billing**: Register new students in Single Occupancy or AC Suite, apply leave days, and generate itemized monthly receipts.
+3. **📚 Library Catalog**: Borrow and return books with role quotas and automatic overdue penalty fines.
+4. **📊 KTU Academics & Attendance (New)**:
+   - Subject-wise attendance percentage tracking with color-coded **75% KTU minimum threshold alerts**.
+   - Continuous Internal Evaluation (**CIE / 50**) computation from Series Exams 1 & 2 and Assignments.
+   - Live **KTU 10-Point SGPA calculation** with credit weighting and Degree Classification badge.
+
+---
 
 ## ⚡ Quick Start: 3 Ways to Run the Web Version
 

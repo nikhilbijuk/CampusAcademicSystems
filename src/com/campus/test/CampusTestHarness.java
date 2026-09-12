@@ -1,5 +1,6 @@
 package com.campus.test;
 
+import com.campus.academic.*;
 import com.campus.exceptions.*;
 import com.campus.hostel.*;
 import com.campus.library.*;
@@ -314,6 +315,99 @@ public class CampusTestHarness {
             passed++;
         } catch (Exception e) {
             System.err.println(" [FAIL] Test 15 wrong exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 16: Academic Attendance & KTU 75% Threshold Eligibility
+        try {
+            Course course = new Course("CST205", "Object Oriented Programming (Java)", 4, 3);
+            AttendanceRecord record = new AttendanceRecord(course, 36, 40); // 90.0%
+            if (Math.abs(record.getPercentage() - 90.0) < 0.001 && record.isEligible()) {
+                System.out.println(" [PASS] Test 16: Attendance calculation & KTU 75% threshold compliance verified (90.0% - Eligible)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 16: Expected 90.0% eligible, got " + record.getPercentage());
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 16 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 17: Caught LowAttendanceException for Attendance Below 75%
+        try {
+            Course course = new Course("MAT203", "Discrete Mathematical Structures", 4, 3);
+            AttendanceRecord record = new AttendanceRecord(course, 26, 40); // 65.0% (Condonation range)
+            record.validateExamEligibility();
+            System.err.println(" [FAIL] Test 17: Expected LowAttendanceException for 65% attendance, but check passed");
+            failed++;
+        } catch (LowAttendanceException e) {
+            System.out.println(" [PASS] Test 17: Caught expected LowAttendanceException for KTU attendance shortage (<75%)");
+            passed++;
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 17 wrong exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 18: Continuous Internal Evaluation (CIE) Calculation & InvalidMarkException
+        try {
+            Course course = new Course("CST201", "Data Structures", 4, 3);
+            InternalAssessment cie = new InternalAssessment(course, 18.0, 19.0, 9.5);
+            double total = cie.calculateTotalCie(); // 46.5 / 50
+            if (Math.abs(total - 46.5) > 0.001 || !cie.isInternalPass()) {
+                throw new AssertionError("Incorrect CIE total: " + total);
+            }
+
+            // Verify InvalidMarkException when mark exceeds component maximum
+            boolean caughtInvalid = false;
+            try {
+                cie.setScores(25.0, 15.0, 9.0); // Series 1 max is 20.0
+            } catch (InvalidMarkException expected) {
+                caughtInvalid = true;
+            }
+
+            if (caughtInvalid) {
+                System.out.println(" [PASS] Test 18: CIE calculation (46.5/50) & InvalidMarkException enforcement verified");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 18: Expected InvalidMarkException for Series 1 mark of 25.0/20.0");
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 18 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 19: KTU SGPA Weighted Credit Calculation (10-Point System)
+        try {
+            AcademicProfile profile = new AcademicProfile("S101", "Rahul Sharma");
+            Course cst205 = new Course("CST205", "OOP Java", 4, 3);
+            Course cst201 = new Course("CST201", "Data Structures", 4, 3);
+            Course est200 = new Course("EST200", "Design & Engineering", 2, 3);
+            Course mcn201 = new Course("MCN201", "Sustainable Engineering", 0, 3); // 0-credit audit
+
+            profile.enrollCourse(cst205);
+            profile.enrollCourse(cst201);
+            profile.enrollCourse(est200);
+            profile.enrollCourse(mcn201);
+
+            profile.recordGrade("CST205", KtuGrade.S);       // 4 * 10.0 = 40
+            profile.recordGrade("CST201", KtuGrade.A_PLUS);  // 4 * 9.0  = 36
+            profile.recordGrade("EST200", KtuGrade.A);       // 2 * 8.5  = 17
+            profile.recordGrade("MCN201", KtuGrade.P);       // 0 * 5.5  = 0 (audit)
+            // Total points: 40 + 36 + 17 = 93. Total credits: 4 + 4 + 2 = 10.
+            // Expected SGPA = 93 / 10 = 9.30
+
+            double sgpa = profile.calculateSGPA();
+            if (Math.abs(sgpa - 9.30) < 0.01 && profile.getClassClassification().contains("Distinction")) {
+                System.out.println(" [PASS] Test 19: KTU SGPA weighted credit calculation verified (9.30/10.0 - Distinction)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 19: Expected SGPA 9.30, got " + sgpa + ", classification: " + profile.getClassClassification());
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 19 exception: " + e.getMessage());
             failed++;
         }
 
