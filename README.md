@@ -1,6 +1,10 @@
 # Campus Academic Management System (KTU Mini Project Framework)
 
-> 🚀 **Live Cloud Deployment (Docker Backend)**: [https://campusacademicsystems-ccjf7nuu.b4a.run/](https://campusacademicsystems-ccjf7nuu.b4a.run/)
+> 🚀 **Live Deployments**:
+> * 📦 **Primary Full-Stack Deployment (Real Java Backend in Docker)**: [https://campusacademicsystems-ccjf7nuu.b4a.run/](https://campusacademicsystems-ccjf7nuu.b4a.run/)  
+>   *(Powered by Back4App Containers running Eclipse Adoptium OpenJDK 17, live REST APIs `/api/*`, pure OOP domain logic, and native `.ser` serialization)*
+> * ⚡ **High-Availability Static Mirror (Cloudflare Edge)**: [https://campus-systems.dev-nikhilbiju.workers.dev](https://campus-systems.dev-nikhilbiju.workers.dev)  
+>   *(Zero-downtime client-side mirror hosted on Cloudflare's global edge network)*
 
 A modular, Object-Oriented Java framework for managing sports facility reservations, user quotas, leave tracking, and hostel mess billing. Designed to adhere to APJ Abdul Kalam Technological University (KTU) academic project standards.
 
@@ -249,56 +253,50 @@ The frontend (`index.html` + `web/app.js`) features built-in fallback mock-state
    https://nikhilbijuk.github.io/CampusAcademicSystems/
    ```
 
+### ⚖️ Live Deployments Comparison: Which URL to Use?
+
+| Feature | 📦 **Back4App URL** (Official Submission) | ⚡ **Cloudflare URL** (High-Availability Mirror) |
+| :--- | :--- | :--- |
+| **Live Address** | [https://campusacademicsystems-ccjf7nuu.b4a.run/](https://campusacademicsystems-ccjf7nuu.b4a.run/) | [https://campus-systems.dev-nikhilbiju.workers.dev](https://campus-systems.dev-nikhilbiju.workers.dev) |
+| **Runtime Environment** | **Real Linux Docker Container (OpenJDK 17)** | Cloudflare Global Edge CDN |
+| **Backend Engine** | Pure Java HTTP Server (`com.sun.net.httpserver.HttpServer`) | Static Asset Engine |
+| **OOP Domain Logic** | Real Java OOP classes (`Court`, `HostelStudent`, `Book`) | Client-side JavaScript fallback |
+| **REST APIs** | Live endpoints (`/api/data`, `/api/reserve`, `/api/save`) | N/A |
+| **Data Persistence** | Native Java Object Serialization (`data/campus_data.ser`) | Browser `localStorage` |
+| **Recommended For** | **Official KTU viva evaluation, teacher review, full-stack defense** | **Fast portfolio preview, backup mirror with zero downtime** |
+
 ---
 
-### Method 2: Full-Stack Cloud Deployment (Render & Free Alternatives)
-Because the project contains a standardized [`Dockerfile`](Dockerfile) and `WebLauncher` dynamically binds to any cloud `$PORT`, you can deploy to any container cloud:
+### Method 2: Full-Stack Cloud Deployment (Back4App Containers, Railway & Render)
+Because the project contains a standardized [`Dockerfile`](Dockerfile) running Eclipse Adoptium OpenJDK 17 and `WebLauncher` dynamically binds to any cloud `$PORT`, it can be deployed to any container platform:
 
-#### 1. Koyeb (Recommended Free Alternative — No Cold Sleep)
-* **Website**: [koyeb.com](https://www.koyeb.com)
-* **Free Tier**: 1 free Eco Web Service (512MB RAM, 0.1 vCPU), free SSL (`*.koyeb.app`), faster wake-ups than Render.
-* **Steps**:
-  1. Sign in to Koyeb with GitHub.
-  2. Click **Create App** > Select **GitHub**.
-  3. Select `nikhilbijuk/CampusAcademicSystems`.
-  4. Choose **Dockerfile** deployment.
-  5. Select **Eco Free** tier and click **Deploy**.
+#### 1. Back4App Containers (Verified Live Deployment)
+* **Status**: 🟢 **Live**: [https://campusacademicsystems-ccjf7nuu.b4a.run/](https://campusacademicsystems-ccjf7nuu.b4a.run/)
+* **Free Tier**: 100 free container execution hours/month, 256 MB RAM, 0.25 vCPU, zero credit card required.
+* **Steps to Replicate**:
+  1. Sign in to [back4app.com/containers](https://www.back4app.com/containers) using GitHub.
+  2. Click **Create New App** > **Container as a Service (CaaS)**.
+  3. Select **A Dockerfile** stack and connect `nikhilbijuk/CampusAcademicSystems`.
+  4. Set **Port**: `8080` (HTTP).
+  5. Back4App automatically detects `java -cp bin com.campus.main.WebLauncher` as start command.
+  6. Click **Save and Deploy**.
 
-#### 2. Railway (Fastest Setup & Zero Cold-Starts)
+#### 2. Railway (Fastest Setup & 8 GB RAM Trial)
 * **Website**: [railway.app](https://railway.app)
-* **Highlights**: Real-time log streaming, instant container build, zero lag.
+* **Free Tier**: $5 starter trial credit (~500 container hours), no credit card required.
 * **Steps**:
-  1. Log in to Railway using your GitHub account.
-  2. Click **New Project** > **Deploy from GitHub repo**.
-  3. Select `CampusAcademicSystems`.
-  4. Railway automatically detects [`Dockerfile`](Dockerfile) and deploys on a free public domain.
+  1. Log in to Railway using GitHub.
+  2. Click **New Project** > **Deploy from GitHub repo** > Select `CampusAcademicSystems`.
+  3. Railway automatically detects [`Dockerfile`](Dockerfile) and deploys on a free public domain.
 
-#### 3. Render (Standard Free Tier)
+#### 3. Render (Standard Free PaaS)
 * **Website**: [render.com](https://render.com)
-* **Free Tier**: Free web service with automatic GitHub continuous deployment.
+* **Free Tier**: 512 MB RAM web service, sleeps after 15 mins of inactivity (~45s cold start).
 * **Steps**:
   1. Sign up on Render.com > Click **New +** > **Web Service**.
   2. Connect `CampusAcademicSystems` repository.
-  3. Render auto-selects `Docker` runtime and `Dockerfile`.
+  3. Render auto-selects `Docker` runtime and [`Dockerfile`](Dockerfile).
   4. Select **Free** instance type and click **Create Web Service**.
-
-#### 4. Hugging Face Spaces (100% Free — 16 GB RAM & 2 vCPUs)
-* **Website**: [huggingface.co/spaces](https://huggingface.co/spaces)
-* **Why**: Completely free Docker container hosting with 16 GB RAM that never runs out of memory.
-* **Steps**:
-  1. Go to [huggingface.co](https://huggingface.co) and click **New Space**.
-  2. Enter Space name: `CampusAcademicSystems`.
-  3. Select Space SDK: **Docker** > **Blank**.
-  4. Under Space Hardware, select **Free 2 vCPU · 16 GB RAM**.
-  5. Go to Space **Settings** > **Variables and secrets** > Add New Variable: `PORT` = `7860`.
-  6. Clone the HF Space repo or connect GitHub repo. Once pushed, it builds and runs live on `https://huggingface.co/spaces/<your-username>/CampusAcademicSystems`.
-
-#### 5. Fly.io (Global Edge Micro-VMs)
-* **Website**: [fly.io](https://fly.io)
-* **Steps**:
-  1. Install CLI: `powershell -Command "iwr https://fly.io/install.ps1 -useb | iex"`
-  2. Run `fly launch` in the project root directory.
-  3. Run `fly deploy` to launch onto lightweight Firecracker micro-VMs.
 
 ---
 
