@@ -1,8 +1,10 @@
 # Campus Academic Management System (KTU Mini Project Framework)
 
 > 🚀 **Live Deployments**:
-> * 📦 **Primary Full-Stack Deployment (Real Java Backend in Docker)**: [https://campusacademicsystems-ccjf7nuu.b4a.run/](https://campusacademicsystems-ccjf7nuu.b4a.run/)  
->   *(Powered by Back4App Containers running Eclipse Adoptium OpenJDK 17, live REST APIs `/api/*`, pure OOP domain logic, and native `.ser` serialization)*
+> * 💻 **Replit Cloud Deployment (Live Java Backend)**: [https://campus-academic-systems--devnikhilbiju.replit.app](https://campus-academic-systems--devnikhilbiju.replit.app)  
+>   *(Powered by OpenJDK 17 on Replit, live REST APIs `/api/*`, and real-time state persistence)*
+> * 📦 **Docker Container Deployment (Back4App)**: [https://campusacademicsystems-ccjf7nuu.b4a.run/](https://campusacademicsystems-ccjf7nuu.b4a.run/)  
+>   *(Running Eclipse Adoptium OpenJDK 17 in Linux Docker container)*
 > * ⚡ **High-Availability Static Mirror (Cloudflare Edge)**: [https://campus-systems.dev-nikhilbiju.workers.dev](https://campus-systems.dev-nikhilbiju.workers.dev)  
 >   *(Zero-downtime client-side mirror hosted on Cloudflare's global edge network)*
 
