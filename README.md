@@ -281,7 +281,19 @@ Because the project contains a standardized [`Dockerfile`](Dockerfile) running E
   5. Back4App automatically detects `java -cp bin com.campus.main.WebLauncher` as start command.
   6. Click **Save and Deploy**.
 
-#### 2. Railway (Fastest Setup & 8 GB RAM Trial)
+#### 2. Replit (Permanent Free Java Hosting — Zero Setup)
+* **Website**: [replit.com](https://replit.com)
+* **Free Tier**: Native Java execution environment, permanent web URL (`*.replit.app`), no credit card required.
+* **Pre-configured**: The repository includes a [`.replit`](.replit) config file for 1-click compilation and execution.
+* **Steps to Deploy**:
+  1. Go to [replit.com](https://replit.com) and sign in with GitHub.
+  2. Click **+ Create Repl** > Select **Import from GitHub**.
+  3. Paste your repository URL: `https://github.com/nikhilbijuk/CampusAcademicSystems`.
+  4. Click **Import from GitHub**.
+  5. Once imported, click the big green **▶ Run** button.
+  6. Replit automatically runs `start-web.sh`, launches `WebLauncher` on port `8080`, and opens your permanent live web application in the Webview panel!
+
+#### 3. Railway (Fastest Cloud Trial & 8 GB RAM)
 * **Website**: [railway.app](https://railway.app)
 * **Free Tier**: $5 starter trial credit (~500 container hours), no credit card required.
 * **Steps**:
@@ -289,7 +301,7 @@ Because the project contains a standardized [`Dockerfile`](Dockerfile) running E
   2. Click **New Project** > **Deploy from GitHub repo** > Select `CampusAcademicSystems`.
   3. Railway automatically detects [`Dockerfile`](Dockerfile) and deploys on a free public domain.
 
-#### 3. Render (Standard Free PaaS)
+#### 4. Render (Standard Free PaaS)
 * **Website**: [render.com](https://render.com)
 * **Free Tier**: 512 MB RAM web service, sleeps after 15 mins of inactivity (~45s cold start).
 * **Steps**:
