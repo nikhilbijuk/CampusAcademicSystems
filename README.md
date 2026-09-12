@@ -1,12 +1,10 @@
 # Campus Academic Management System (KTU Mini Project Framework)
 
 > 🚀 **Live Deployments**:
-> * 💻 **Replit Cloud Deployment (Live Java Backend)**: [https://campus-academic-systems--devnikhilbiju.replit.app](https://campus-academic-systems--devnikhilbiju.replit.app)  
->   *(Powered by OpenJDK 17 on Replit, live REST APIs `/api/*`, and real-time state persistence)*
-> * 📦 **Docker Container Deployment (Back4App)**: [https://campusacademicsystems-ccjf7nuu.b4a.run/](https://campusacademicsystems-ccjf7nuu.b4a.run/)  
->   *(Running Eclipse Adoptium OpenJDK 17 in Linux Docker container)*
+> * 💻 **Primary Full-Stack Deployment (Live Java Backend on Replit)**: [https://campus-academic-systems--devnikhilbiju.replit.app](https://campus-academic-systems--devnikhilbiju.replit.app)  
+>   *(Powered by OpenJDK 17 on Replit Cloud, live REST APIs `/api/*`, pure OOP domain logic, and real-time state persistence)*
 > * ⚡ **High-Availability Static Mirror (Cloudflare Edge)**: [https://campus-systems.dev-nikhilbiju.workers.dev](https://campus-systems.dev-nikhilbiju.workers.dev)  
->   *(Zero-downtime client-side mirror hosted on Cloudflare's global edge network)*
+>   *(Zero-downtime client-side mirror hosted on Cloudflare's global edge network with unlimited bandwidth)*
 
 A modular, Object-Oriented Java framework for managing sports facility reservations, user quotas, leave tracking, and hostel mess billing. Designed to adhere to APJ Abdul Kalam Technological University (KTU) academic project standards.
 
@@ -257,11 +255,11 @@ The frontend (`index.html` + `web/app.js`) features built-in fallback mock-state
 
 ### ⚖️ Live Deployments Comparison: Which URL to Use?
 
-| Feature | 📦 **Back4App URL** (Official Submission) | ⚡ **Cloudflare URL** (High-Availability Mirror) |
+| Feature | 💻 **Replit URL** (Primary Full-Stack) | ⚡ **Cloudflare URL** (High-Availability Mirror) |
 | :--- | :--- | :--- |
-| **Live Address** | [https://campusacademicsystems-ccjf7nuu.b4a.run/](https://campusacademicsystems-ccjf7nuu.b4a.run/) | [https://campus-systems.dev-nikhilbiju.workers.dev](https://campus-systems.dev-nikhilbiju.workers.dev) |
-| **Runtime Environment** | **Real Linux Docker Container (OpenJDK 17)** | Cloudflare Global Edge CDN |
-| **Backend Engine** | Pure Java HTTP Server (`com.sun.net.httpserver.HttpServer`) | Static Asset Engine |
+| **Live Address** | [https://campus-academic-systems--devnikhilbiju.replit.app](https://campus-academic-systems--devnikhilbiju.replit.app) | [https://campus-systems.dev-nikhilbiju.workers.dev](https://campus-systems.dev-nikhilbiju.workers.dev) |
+| **Runtime Environment** | **Real Cloud JVM (OpenJDK 17 on Replit)** | Cloudflare Global Edge Network |
+| **Backend Engine** | Pure Java HTTP Server (`com.sun.net.httpserver.HttpServer`) | Static Edge Engine |
 | **OOP Domain Logic** | Real Java OOP classes (`Court`, `HostelStudent`, `Book`) | Client-side JavaScript fallback |
 | **REST APIs** | Live endpoints (`/api/data`, `/api/reserve`, `/api/save`) | N/A |
 | **Data Persistence** | Native Java Object Serialization (`data/campus_data.ser`) | Browser `localStorage` |
@@ -269,85 +267,31 @@ The frontend (`index.html` + `web/app.js`) features built-in fallback mock-state
 
 ---
 
-### Method 2: Full-Stack Cloud Deployment (Back4App Containers, Railway & Render)
-Because the project contains a standardized [`Dockerfile`](Dockerfile) running Eclipse Adoptium OpenJDK 17 and `WebLauncher` dynamically binds to any cloud `$PORT`, it can be deployed to any container platform:
+### Method 2: Replit Cloud Deployment (Primary Java Backend)
+The project is pre-configured with [`.replit`](.replit) and [`replit.nix`](replit.nix) to compile and run natively on OpenJDK 17.
 
-#### 1. Back4App Containers (Verified Live Deployment)
-* **Status**: 🟢 **Live**: [https://campusacademicsystems-ccjf7nuu.b4a.run/](https://campusacademicsystems-ccjf7nuu.b4a.run/)
-* **Free Tier**: 100 free container execution hours/month, 256 MB RAM, 0.25 vCPU, zero credit card required.
-* **Steps to Replicate**:
-  1. Sign in to [back4app.com/containers](https://www.back4app.com/containers) using GitHub.
-  2. Click **Create New App** > **Container as a Service (CaaS)**.
-  3. Select **A Dockerfile** stack and connect `nikhilbijuk/CampusAcademicSystems`.
-  4. Set **Port**: `8080` (HTTP).
-  5. Back4App automatically detects `java -cp bin com.campus.main.WebLauncher` as start command.
-  6. Click **Save and Deploy**.
-
-#### 2. Replit (Permanent Free Java Hosting — Zero Setup)
-* **Website**: [replit.com](https://replit.com)
-* **Free Tier**: Native Java execution environment, permanent web URL (`*.replit.app`), no credit card required.
-* **Pre-configured**: The repository includes a [`.replit`](.replit) config file for 1-click compilation and execution.
-* **Steps to Deploy**:
-  1. Go to [replit.com](https://replit.com) and sign in with GitHub.
-  2. Click **+ Create Repl** > Select **Import from GitHub**.
-  3. Paste your repository URL: `https://github.com/nikhilbijuk/CampusAcademicSystems`.
-  4. Click **Import from GitHub**.
-  5. Once imported, click the big green **▶ Run** button.
-  6. Replit automatically runs `start-web.sh`, launches `WebLauncher` on port `8080`, and opens your permanent live web application in the Webview panel!
-
-#### 3. Railway (Fastest Cloud Trial & 8 GB RAM)
-* **Website**: [railway.app](https://railway.app)
-* **Free Tier**: $5 starter trial credit (~500 container hours), no credit card required.
-* **Steps**:
-  1. Log in to Railway using GitHub.
-  2. Click **New Project** > **Deploy from GitHub repo** > Select `CampusAcademicSystems`.
-  3. Railway automatically detects [`Dockerfile`](Dockerfile) and deploys on a free public domain.
-
-#### 4. Render (Standard Free PaaS)
-* **Website**: [render.com](https://render.com)
-* **Free Tier**: 512 MB RAM web service, sleeps after 15 mins of inactivity (~45s cold start).
-* **Steps**:
-  1. Sign up on Render.com > Click **New +** > **Web Service**.
-  2. Connect `CampusAcademicSystems` repository.
-  3. Render auto-selects `Docker` runtime and [`Dockerfile`](Dockerfile).
-  4. Select **Free** instance type and click **Create Web Service**.
+* **Live URL**: [https://campus-academic-systems--devnikhilbiju.replit.app](https://campus-academic-systems--devnikhilbiju.replit.app)
+* **How It Runs**:
+  1. Cloned directly from GitHub into Replit.
+  2. Provisions OpenJDK 17 via Nix environment.
+  3. Executes `start-web.sh`, compiling all `.java` sources into `bin/`.
+  4. Binds dynamically to `$PORT` and exposes live REST endpoints.
 
 ---
 
-### Method 3: Cloudflare Deployment Options
+### Method 3: Cloudflare Edge Deployment (High-Availability Mirror)
+Hosted on Cloudflare's global edge network across 300+ cities:
 
-Cloudflare offers two ways to deploy this system:
-
-#### A. Cloudflare Pages (Frontend Web Hosting — 100% Free & Unlimited Bandwidth)
-1. Sign up on [dash.cloudflare.com](https://dash.cloudflare.com).
-2. Navigate to **Compute (Workers & Pages)** > **Pages** > **Connect to Git**.
-3. Select your repository: `CampusAcademicSystems`.
-4. Build Settings:
-   * **Framework preset**: `None`
-   * **Build command**: *(leave blank)*
-   * **Build output directory**: `/`
-5. Click **Save and Deploy**. Cloudflare gives you an instant `*.pages.dev` URL backed by their global 300+ city edge network.
-
-#### B. Cloudflare Tunnel (Live Secure Tunnel from Your Laptop)
-Expose your local Java server to a public HTTPS Cloudflare link without port forwarding:
-1. Download `cloudflared` from Cloudflare or via winget:
-   ```powershell
-   winget install Cloudflare.cloudflared
-   ```
-2. Start the local Java Web Launcher:
-   ```powershell
-   java -cp bin com.campus.main.WebLauncher
-   ```
-3. In another terminal, run:
-   ```powershell
-   cloudflared tunnel --url http://localhost:8080
-   ```
-4. Cloudflare will output a free, encrypted public HTTPS link (e.g., `https://random-words.trycloudflare.com`) routing directly to your running Java server!
+* **Live URL**: [https://campus-systems.dev-nikhilbiju.workers.dev](https://campus-systems.dev-nikhilbiju.workers.dev)
+* **Key Benefits**:
+  * 100% Free with unlimited bandwidth.
+  * Zero cold-start latency.
+  * Works as a reliable backup during presentations.
 
 ---
 
 ### Method 4: Instant Live Viva Tunneling (Localtunnel / Ngrok)
-To demonstrate your locally running Java server to an external evaluator, viva examiner, or mobile phone over public Wi-Fi without deploying to the cloud:
+To demonstrate your locally running Java server to an external evaluator, viva examiner, or mobile phone over public Wi-Fi without cloud dependencies:
 
 1. Start your local Java Web Launcher:
    ```powershell
@@ -359,5 +303,6 @@ To demonstrate your locally running Java server to an external evaluator, viva e
    ```
    *(Or using ngrok: `ngrok http 8080`)*
 3. Share the generated public HTTPS URL (e.g., `https://clean-campus-app.loca.lt`) to access your local machine live from anywhere!
+
 
 
