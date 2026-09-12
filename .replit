@@ -4,6 +4,11 @@ entrypoint = "src/com/campus/main/WebLauncher.java"
 [nix]
 channel = "stable-24_05"
 
+[deployment]
+run = ["java", "-cp", "bin", "com.campus.main.WebLauncher"]
+build = ["bash", "-c", "mkdir -p bin && javac -d bin $(find src -name '*.java')"]
+
 [[ports]]
 localPort = 8080
 externalPort = 80
+
