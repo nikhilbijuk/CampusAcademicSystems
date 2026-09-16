@@ -106,7 +106,9 @@ CampusAcademicSystems/
 The project includes an event-driven desktop GUI built with **Java Swing** backed by a **SQLite JDBC database layer** using the **Singleton Design Pattern**:
 
 ### 🖱️ Option 1: 1-Click Launch (Recommended for Viva)
-* **Windows**: Double-click [`start-gui.bat`](start-gui.bat)
+* **Windows File Explorer**: Double-click [`start-gui.bat`](start-gui.bat)
+* **PowerShell Terminal**: Run `.\start-gui.bat` *(Note the `.\` prefix required by PowerShell)*
+* **Command Prompt (CMD)**: Run `start-gui.bat`
 * **Linux / macOS**: Run `./start-gui.sh` in terminal
 
 ### 💻 Option 2: Terminal Launch
