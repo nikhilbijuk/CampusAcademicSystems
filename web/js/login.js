@@ -19,6 +19,11 @@ const KNOWN_USERS = {
       ids: ['student@ridgeview.edu', 'rv2023cs041', 'aditi@ridgeview.edu'],
       password: 'student123',
       profile: { name: 'Aditi Menon', id: 'RV2023CS041', course: 'B.Tech Computer Science', year: '3rd Year · Semester 5', email: 'student@ridgeview.edu', advisor: 'Dr. Leena Fernandes' }
+    },
+    {
+      ids: ['dev.nikhilbiju@gmail.com', 'nikhil@gmail.com', 'nikhil'],
+      password: 'student123',
+      profile: { name: 'Nikhil Biju', id: 'S103', course: 'B.Tech Computer Science & Engg (KTU)', year: '2nd Year · Semester 3', email: 'dev.nikhilbiju@gmail.com', advisor: 'Dr. Joseph Kurian' }
     }
   ],
   admin: [
