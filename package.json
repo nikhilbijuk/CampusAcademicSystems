@@ -7,7 +7,8 @@
     "dev": "cmd.exe /c start-web.bat",
     "start": "cmd.exe /c start-web.bat",
     "gui": "cmd.exe /c start-gui.bat",
-    "test": "java -cp \"bin;lib/*\" com.campus.test.CampusTestHarness"
+    "test": "java -cp \"bin;lib/*\" com.campus.test.CampusTestHarness",
+    "deploy": "wrangler deploy"
   },
   "keywords": [
     "ktu",
