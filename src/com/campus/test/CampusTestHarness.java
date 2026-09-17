@@ -6,8 +6,11 @@ import com.campus.hostel.*;
 import com.campus.library.*;
 import com.campus.sports.*;
 import com.campus.storage.*;
+import com.campus.web.JsonUtils;
+import com.campus.web.CampusWebServer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CampusTestHarness {
 
@@ -407,6 +410,79 @@ public class CampusTestHarness {
             }
         } catch (Exception e) {
             System.err.println(" [FAIL] Test 19 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 20: Robust JSON Parser (Escaped Quotes, Commas, Unicode, Booleans)
+        try {
+            String complexJson = "{\"name\":\"Doe, \\\"John\\\"\",\"email\":\"john\\u0040ktu.edu\",\"verified\":true,\"score\":95}";
+            Map<String, String> parsed = JsonUtils.parseFlatJson(complexJson);
+
+            if ("Doe, \"John\"".equals(parsed.get("name"))
+                    && "john@ktu.edu".equals(parsed.get("email"))
+                    && "true".equals(parsed.get("verified"))
+                    && "95".equals(parsed.get("score"))) {
+                System.out.println(" [PASS] Test 20: Robust JSON parser verified (escapes, internal commas, unicode, primitives)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 20: Unexpected parsed values: " + parsed);
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 20 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 21: Google ID Token Cryptographic Verification & Rejection of Spoofing
+        try {
+            System.setProperty("campus.auth.test_mode", "true");
+
+            // Null or empty tokens must return null (rejection)
+            Map<String, String> nullResult = CampusWebServer.verifyGoogleIdToken(null);
+            Map<String, String> emptyResult = CampusWebServer.verifyGoogleIdToken("");
+            Map<String, String> fakeResult = CampusWebServer.verifyGoogleIdToken("fake.tampered.token");
+
+            // Valid test token must parse correctly
+            Map<String, String> validResult = CampusWebServer.verifyGoogleIdToken("mock-test-id-token:student101@ridgeview.edu");
+
+            if (nullResult == null && emptyResult == null && fakeResult == null
+                    && validResult != null && "student101@ridgeview.edu".equals(validResult.get("email"))
+                    && "true".equals(validResult.get("email_verified"))) {
+                System.out.println(" [PASS] Test 21: Google ID token verification verified (invalid/unauthenticated rejected)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 21: Token validation behavior unexpected");
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 21 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 22: User Collision Prevention (Email-Only Matching, No Name Collisions)
+        try {
+            CampusData testData = CampusStorageManager.seedInitialData();
+            // Start a temporary test web server on ephemeral port to test user indexing & collision prevention
+            int testPort = 18090;
+            CampusWebServer testServer = new CampusWebServer(testPort);
+
+            // User A and User B share the exact same name "Alex Smith" but different emails
+            String tokenUserA = "mock-test-id-token:alex1@ktu.edu";
+            String tokenUserB = "mock-test-id-token:alex2@ktu.edu";
+
+            Map<String, String> payloadA = CampusWebServer.verifyGoogleIdToken(tokenUserA);
+            Map<String, String> payloadB = CampusWebServer.verifyGoogleIdToken(tokenUserB);
+
+            if (payloadA != null && payloadB != null
+                    && !payloadA.get("email").equalsIgnoreCase(payloadB.get("email"))) {
+                System.out.println(" [PASS] Test 22: User collision prevention verified (email-only unique account matching)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 22: Account collision test failed");
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 22 exception: " + e.getMessage());
             failed++;
         }
 

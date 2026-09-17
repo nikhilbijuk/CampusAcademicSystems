@@ -189,12 +189,18 @@ async function handleGoogleCredentialResponse(response) {
         window.location.href = role === 'student' ? 'student-dashboard.html' : 'admin-dashboard.html';
         return;
       }
+    } else {
+      // Backend explicitly rejected the token
+      const errData = await res.json().catch(() => ({}));
+      alert('Google authentication rejected: ' + (errData.error || 'Invalid or expired Google token.'));
+      if (submitLabel) submitLabel.textContent = 'Continue with Google';
+      return;
     }
   } catch (err) {
-    console.warn('Backend verification offline, proceeding with client-side verified Google token:', err);
+    console.warn('Backend verification offline (static deployment):', err);
   }
 
-  // Client-side fallback if running static on Cloudflare without Java server
+  // Client-side fallback ONLY if backend is completely offline (static deployment on Cloudflare)
   if (clientPayload && clientPayload.email) {
     const profile = {
       name: clientPayload.name || clientPayload.email.split('@')[0],
@@ -219,6 +225,36 @@ async function handleGoogleCredentialResponse(response) {
 
 window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
 
+function tryInitGsi() {
+  const activeId = getGoogleClientId();
+  if (window.google && window.google.accounts && activeId) {
+    try {
+      window.google.accounts.id.initialize({
+        client_id: activeId,
+        callback: handleGoogleCredentialResponse,
+        auto_select: false
+      });
+      const wrapper = document.getElementById('googleGsiWrapper');
+      const googleBtn = document.getElementById('googleLoginBtn');
+      if (wrapper) {
+        wrapper.innerHTML = '';
+        window.google.accounts.id.renderButton(wrapper, {
+          theme: 'outline',
+          size: 'large',
+          width: 320,
+          text: 'signin_with',
+          shape: 'rectangular'
+        });
+        if (googleBtn) googleBtn.style.display = 'none';
+      }
+    } catch (e) {
+      console.error('Google GSI initialization error:', e);
+    }
+  }
+}
+
+window.initGoogleGsi = tryInitGsi;
+
 function initGoogleAuth() {
   const googleBtn = document.getElementById('googleLoginBtn');
   const modal = document.getElementById('googleConfigModal');
@@ -229,33 +265,6 @@ function initGoogleAuth() {
   const clientId = getGoogleClientId();
   if (clientInput && clientId) {
     clientInput.value = clientId;
-  }
-
-  function tryInitGsi() {
-    const activeId = getGoogleClientId();
-    if (window.google && window.google.accounts && activeId) {
-      try {
-        window.google.accounts.id.initialize({
-          client_id: activeId,
-          callback: handleGoogleCredentialResponse,
-          auto_select: false
-        });
-        const wrapper = document.getElementById('googleGsiWrapper');
-        if (wrapper) {
-          wrapper.innerHTML = '';
-          window.google.accounts.id.renderButton(wrapper, {
-            theme: 'outline',
-            size: 'large',
-            width: 320,
-            text: 'signin_with',
-            shape: 'rectangular'
-          });
-          if (googleBtn) googleBtn.style.display = 'none';
-        }
-      } catch (e) {
-        console.error('Google GSI initialization error:', e);
-      }
-    }
   }
 
   if (window.google && window.google.accounts) {
