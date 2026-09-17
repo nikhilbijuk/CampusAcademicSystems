@@ -50,6 +50,7 @@ public class CampusWebServer {
         server.createContext("/api/library/borrow", new ApiLibraryBorrowHandler());
         server.createContext("/api/library/return", new ApiLibraryReturnHandler());
         server.createContext("/api/academic", new ApiAcademicHandler());
+        server.createContext("/api/auth/google", new ApiGoogleAuthHandler());
         server.createContext("/api/save", new ApiSaveHandler());
 
         // Static Web UI Files
@@ -876,6 +877,52 @@ public class CampusWebServer {
         profile.recordGrade("MCN201", KtuGrade.P);
 
         return profile;
+    }
+
+    private class ApiGoogleAuthHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, "{\"error\":\"Method Not Allowed\"}", "application/json");
+                return;
+            }
+
+            String body = readRequestBody(exchange);
+            Map<String, String> params = JsonUtils.parseFlatJson(body);
+            String email = params.get("email");
+            String name = params.get("name");
+
+            if (email == null) {
+                sendResponse(exchange, 400, "{\"success\":false,\"error\":\"Email is required\"}", "application/json");
+                return;
+            }
+
+            synchronized (data) {
+                User user = null;
+                for (User u : data.getUsers()) {
+                    if (u.getName().equalsIgnoreCase(name) || u.getUserId().equalsIgnoreCase(email)) {
+                        user = u;
+                        break;
+                    }
+                }
+
+                if (user == null) {
+                    String newId = "S" + (100 + data.getUsers().size() + 1);
+                    user = new Student(newId, name != null ? name : email);
+                    data.getUsers().add(user);
+                }
+
+                String json = "{"
+                    + "\"success\":true,"
+                    + "\"userId\":\"" + JsonUtils.escapeJson(user.getUserId()) + "\","
+                    + "\"name\":\"" + JsonUtils.escapeJson(user.getName()) + "\","
+                    + "\"role\":\"" + user.getClass().getSimpleName() + "\","
+                    + "\"fineBalance\":" + user.getFineBalance()
+                    + "}";
+
+                sendResponse(exchange, 200, json, "application/json");
+            }
+        }
     }
 
     private static String getMimeType(String filename) {

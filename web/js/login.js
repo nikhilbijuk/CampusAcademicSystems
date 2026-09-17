@@ -124,3 +124,121 @@ form.addEventListener('submit', (e) => {
     window.location.href = role === 'student' ? 'student-dashboard.html' : 'admin-dashboard.html';
   }, 400);
 });
+
+// ==========================================
+// Google Identity Services (Sign in with Google)
+// ==========================================
+
+// Configurable Google OAuth Client ID:
+// If you create a Web Client ID in Google Cloud Console, set it here:
+window.GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID || '';
+
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch(e) {
+    return null;
+  }
+}
+
+function handleGoogleCredentialResponse(response) {
+  const payload = parseJwt(response.credential);
+  if (!payload) {
+    alert('Failed to parse Google login credential token.');
+    return;
+  }
+
+  const role = roleField.value || 'student';
+  const profile = {
+    name: payload.name || payload.email.split('@')[0],
+    email: payload.email,
+    picture: payload.picture || '',
+    id: role === 'student' ? 'S101' : 'ADM-014',
+    course: role === 'student' ? 'B.Tech Computer Science & Engg (KTU)' : 'Academic Administration',
+    year: role === 'student' ? '2nd Year · Semester 3' : 'Administrator',
+    advisor: 'Dr. Joseph Kurian',
+    authProvider: 'google'
+  };
+
+  sessionStorage.setItem('ridgeview_role', role);
+  sessionStorage.setItem('ridgeview_profile', JSON.stringify(profile));
+  window.location.href = role === 'student' ? 'student-dashboard.html' : 'admin-dashboard.html';
+}
+
+window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
+
+function initGoogleAuth() {
+  const googleBtn = document.getElementById('googleLoginBtn');
+  if (!googleBtn) return;
+
+  function tryInitGsi() {
+    if (window.google && window.google.accounts && window.GOOGLE_CLIENT_ID) {
+      window.google.accounts.id.initialize({
+        client_id: window.GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredentialResponse,
+        auto_select: false
+      });
+      const wrapper = document.getElementById('googleGsiWrapper');
+      if (wrapper) {
+        window.google.accounts.id.renderButton(wrapper, {
+          theme: 'outline',
+          size: 'large',
+          width: 320,
+          text: 'signin_with',
+          shape: 'rectangular'
+        });
+      }
+    }
+  }
+
+  if (window.google && window.google.accounts) {
+    tryInitGsi();
+  } else {
+    window.addEventListener('load', tryInitGsi);
+  }
+
+  googleBtn.addEventListener('click', () => {
+    // If real Client ID is initialized, prompt GIS
+    if (window.google && window.google.accounts && window.GOOGLE_CLIENT_ID) {
+      window.google.accounts.id.prompt();
+      return;
+    }
+
+    // 1-Click Interactive Google Sign-In
+    const role = roleField.value || 'student';
+    const suggestedEmail = role === 'student' ? 'dev.nikhilbiju@gmail.com' : 'admin.nikhilbiju@gmail.com';
+    const email = prompt('Sign in with Google:\nEnter your Google Account email:', suggestedEmail);
+    if (!email || !email.trim()) return;
+
+    const rawName = email.split('@')[0].replace(/[\._]/g, ' ');
+    const name = rawName.replace(/\b\w/g, l => l.toUpperCase());
+
+    const profile = {
+      name: name,
+      email: email.trim(),
+      picture: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
+      id: role === 'student' ? 'S101' : 'ADM-014',
+      course: role === 'student' ? 'B.Tech Computer Science & Engg (KTU)' : 'Academic Administration',
+      year: role === 'student' ? '2nd Year · Semester 3' : 'Administrator',
+      advisor: 'Dr. Joseph Kurian',
+      authProvider: 'google'
+    };
+
+    const label = document.getElementById('googleBtnLabel');
+    if (label) label.textContent = 'Connecting with Google...';
+    googleBtn.disabled = true;
+
+    setTimeout(() => {
+      sessionStorage.setItem('ridgeview_role', role);
+      sessionStorage.setItem('ridgeview_profile', JSON.stringify(profile));
+      window.location.href = role === 'student' ? 'student-dashboard.html' : 'admin-dashboard.html';
+    }, 400);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initGoogleAuth);

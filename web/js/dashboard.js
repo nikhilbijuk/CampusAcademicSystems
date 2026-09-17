@@ -44,8 +44,20 @@
       const initials = profile.name ? profile.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase() : 'RS';
 
       if (nameEl && profile.name) nameEl.textContent = profile.name;
-      if (initialsEl) initialsEl.textContent = initials;
-      if (topAvatarEl) topAvatarEl.textContent = initials;
+      if (profile.picture) {
+        if (initialsEl) {
+          initialsEl.innerHTML = `<img src="${profile.picture}" alt="${profile.name}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+          initialsEl.style.background = 'transparent';
+        }
+        if (topAvatarEl) {
+          topAvatarEl.innerHTML = `<img src="${profile.picture}" alt="${profile.name}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+          topAvatarEl.style.background = 'transparent';
+        }
+      } else {
+        if (initialsEl) initialsEl.textContent = initials;
+        if (topAvatarEl) topAvatarEl.textContent = initials;
+      }
+
       if (sideRoleEl && (profile.year || profile.role)) sideRoleEl.textContent = profile.year || profile.role;
       if (topbarSub && (profile.course || profile.role)) {
         topbarSub.textContent = `${profile.course || profile.role} ${profile.year ? '· ' + profile.year : ''}`;
