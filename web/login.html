@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — Ridgeview Campus Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/login.css">
+</head>
+<body class="login-body">
+
+<div class="login-shell">
+  <!-- Left brand / context panel -->
+  <div class="login-side">
+    <div>
+      <a href="index.html" class="brand">
+        <div class="brand-mark">R</div>
+        <div class="brand-name">Ridgeview<span>Campus Portal</span></div>
+      </a>
+    </div>
+    <div class="login-quote">
+      <h2>"Everything about my semester, in one tab."</h2>
+      <p>Attendance, timetable, assignments and results — students and staff sign in to the same portal, tailored to their role.</p>
+    </div>
+    <div class="login-side-footer">© 2026 Ridgeview College</div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="login-main">
+    <div class="login-card">
+      <a href="index.html" class="back-home">← Back to home</a>
+
+      <div class="role-toggle" role="tablist" aria-label="Login as">
+        <button type="button" id="tabStudent" class="active" role="tab" aria-selected="true">Student</button>
+        <button type="button" id="tabAdmin" role="tab" aria-selected="false">Administrator</button>
+      </div>
+
+      <h1 id="formTitle">Student login</h1>
+      <p id="formSubtitle">Sign in with your registration email to view courses, attendance and results.</p>
+
+      <div class="demo-hint" style="line-height:1.5;">
+        <strong>Demo logins:</strong><br>
+        • Student: <code>S101</code> (Rahul Sharma), <code>S102</code> (Priya Nair), or <code>student@ridgeview.edu</code> (Pass: <code>student123</code>)<br>
+        • Admin: <code>ADMIN</code> or <code>admin@ridgeview.edu</code> (Pass: <code>admin123</code>)
+      </div>
+
+      <div class="form-error" id="formError">That email and password don't match our records. Try again.</div>
+
+      <form id="loginForm" novalidate>
+        <input type="hidden" id="role" value="student">
+        <div class="field">
+          <label for="identifier" id="identifierLabel">Registration ID or Email</label>
+          <input type="text" id="identifier" autocomplete="username" placeholder="S101 or student@ridgeview.edu" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" autocomplete="current-password" placeholder="••••••••" required>
+        </div>
+        <div class="field-row">
+          <label class="remember"><input type="checkbox" id="remember"> Keep me signed in</label>
+          <a href="#" class="forgot">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Log in</button>
+      </form>
+
+      <p class="login-foot">Direct access: <a href="classic-dashboard.html">Classic Viva Dashboard ↗</a> · <a href="index.html">Portal Home</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="js/login.js" defer></script>
+</body>
+</html>

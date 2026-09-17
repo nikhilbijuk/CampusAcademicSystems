@@ -1,5 +1,6 @@
 package com.campus.web;
 
+import com.campus.academic.*;
 import com.campus.exceptions.*;
 import com.campus.hostel.*;
 import com.campus.library.*;
@@ -48,6 +49,7 @@ public class CampusWebServer {
         server.createContext("/api/hostel/bill", new ApiHostelBillHandler());
         server.createContext("/api/library/borrow", new ApiLibraryBorrowHandler());
         server.createContext("/api/library/return", new ApiLibraryReturnHandler());
+        server.createContext("/api/academic", new ApiAcademicHandler());
         server.createContext("/api/save", new ApiSaveHandler());
 
         // Static Web UI Files
@@ -786,6 +788,96 @@ public class CampusWebServer {
         return map;
     }
 
+    private class ApiAcademicHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, "{\"error\":\"Method Not Allowed\"}", "application/json");
+                return;
+            }
+
+            Map<String, String> query = parseQueryParams(exchange.getRequestURI().getQuery());
+            String studentId = query.getOrDefault("studentId", "S101");
+
+            AcademicProfile profile = createDefaultKtuProfile(studentId);
+
+            StringBuilder json = new StringBuilder("{");
+            json.append("\"studentId\":\"").append(JsonUtils.escapeJson(profile.getStudentId())).append("\",");
+            json.append("\"studentName\":\"").append(JsonUtils.escapeJson(profile.getStudentName())).append("\",");
+            json.append("\"sgpa\":").append(String.format(Locale.US, "%.2f", profile.calculateSGPA())).append(",");
+
+            json.append("\"courses\":[");
+            List<Course> courses = profile.getEnrolledCourses();
+            for (int i = 0; i < courses.size(); i++) {
+                Course c = courses.get(i);
+                AttendanceRecord att = profile.getAttendance(c.getCourseCode());
+                InternalAssessment cie = profile.getInternals(c.getCourseCode());
+                KtuGrade grade = profile.getGrade(c.getCourseCode());
+
+                if (i > 0) json.append(",");
+                json.append("{")
+                    .append("\"code\":\"").append(JsonUtils.escapeJson(c.getCourseCode())).append("\",")
+                    .append("\"name\":\"").append(JsonUtils.escapeJson(c.getCourseName())).append("\",")
+                    .append("\"credits\":").append(c.getCredits()).append(",")
+                    .append("\"attended\":").append(att != null ? att.getClassesAttended() : 0).append(",")
+                    .append("\"totalSlots\":").append(att != null ? att.getTotalClasses() : 0).append(",")
+                    .append("\"percentage\":").append(att != null ? String.format(Locale.US, "%.1f", att.getPercentage()) : "0.0").append(",")
+                    .append("\"isLowAttendance\":").append(att != null ? !att.isEligible() : false).append(",")
+                    .append("\"cieTotal\":").append(cie != null ? String.format(Locale.US, "%.1f", cie.calculateTotalCie()) : "0.0").append(",")
+                    .append("\"grade\":\"").append(grade != null ? grade.getLabel() : "P").append("\",")
+                    .append("\"gradePoints\":").append(grade != null ? grade.getGradePoint() : 0.0)
+                    .append("}");
+            }
+            json.append("]}");
+
+            sendResponse(exchange, 200, json.toString(), "application/json");
+        }
+    }
+
+    private static AcademicProfile createDefaultKtuProfile(String studentId) {
+        String studentName = "S102".equalsIgnoreCase(studentId) ? "Priya Nair" : "Rahul Sharma";
+        AcademicProfile profile = new AcademicProfile(studentId, studentName);
+
+        Course mat203 = new Course("MAT203", "Discrete Mathematical Structures", 4, 4);
+        Course cst201 = new Course("CST201", "Data Structures", 4, 4);
+        Course cst203 = new Course("CST203", "Logic System Design", 4, 4);
+        Course cst205 = new Course("CST205", "Object Oriented Programming Using Java", 4, 4);
+        Course est200 = new Course("EST200", "Design & Engineering", 2, 2);
+        Course mcn201 = new Course("MCN201", "Sustainable Engineering", 0, 2);
+
+        profile.enrollCourse(mat203);
+        profile.enrollCourse(cst201);
+        profile.enrollCourse(cst203);
+        profile.enrollCourse(cst205);
+        profile.enrollCourse(est200);
+        profile.enrollCourse(mcn201);
+
+        profile.recordAttendance("MAT203", 46, 50);
+        profile.recordAttendance("CST201", 44, 50);
+        profile.recordAttendance("CST203", 41, 50);
+        profile.recordAttendance("CST205", 48, 50);
+        profile.recordAttendance("EST200", 18, 25);
+        profile.recordAttendance("MCN201", 18, 20);
+
+        try {
+            profile.recordInternals("MAT203", 18.0, 19.0, 9.5);
+            profile.recordInternals("CST201", 17.0, 18.0, 9.0);
+            profile.recordInternals("CST203", 16.0, 17.0, 8.5);
+            profile.recordInternals("CST205", 19.5, 20.0, 10.0);
+            profile.recordInternals("EST200", 14.0, 15.0, 8.0);
+            profile.recordInternals("MCN201", 15.0, 16.0, 8.0);
+        } catch (Exception ignored) {}
+
+        profile.recordGrade("MAT203", KtuGrade.A_PLUS);
+        profile.recordGrade("CST201", KtuGrade.A);
+        profile.recordGrade("CST203", KtuGrade.B_PLUS);
+        profile.recordGrade("CST205", KtuGrade.S);
+        profile.recordGrade("EST200", KtuGrade.B);
+        profile.recordGrade("MCN201", KtuGrade.P);
+
+        return profile;
+    }
+
     private static String getMimeType(String filename) {
         String lower = filename.toLowerCase();
         if (lower.endsWith(".html")) return "text/html";
@@ -795,6 +887,10 @@ public class CampusWebServer {
         if (lower.endsWith(".svg")) return "image/svg+xml";
         if (lower.endsWith(".png")) return "image/png";
         if (lower.endsWith(".ico")) return "image/x-icon";
+        if (lower.endsWith(".woff2")) return "font/woff2";
+        if (lower.endsWith(".woff")) return "font/woff";
+        if (lower.endsWith(".ttf")) return "font/ttf";
+        if (lower.endsWith(".webp")) return "image/webp";
         return "application/octet-stream";
     }
 }

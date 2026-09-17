@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Ridgeview Campus Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body class="dash-body" data-guard="admin">
+
+<div class="dash-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="brand">
+      <div class="brand-mark">R</div>
+      <div class="brand-name">Ridgeview<span>Campus Portal</span></div>
+    </a>
+
+    <div class="side-label">Administration</div>
+    <nav class="side-nav" id="sideNav">
+      <a href="#overview" class="side-link active" data-target="overview"><span class="ic">◈</span><span class="label">Overview</span></a>
+      <a href="#students" class="side-link" data-target="students"><span class="ic">🎓</span><span class="label">Students</span></a>
+      <a href="#faculty" class="side-link" data-target="faculty"><span class="ic">🧑‍🏫</span><span class="label">Faculty</span></a>
+      <a href="#course-mgmt" class="side-link" data-target="course-mgmt"><span class="ic">📘</span><span class="label">Courses</span></a>
+      <a href="#timetable-mgmt" class="side-link" data-target="timetable-mgmt"><span class="ic">🗓️</span><span class="label">Timetable</span></a>
+      <a href="#attendance-mgmt" class="side-link" data-target="attendance-mgmt"><span class="ic">✅</span><span class="label">Attendance</span></a>
+      <a href="#facilities-mgmt" class="side-link" data-target="facilities-mgmt"><span class="ic">🏟️</span><span class="label">Facilities</span></a>
+      <a href="#hostel-mgmt" class="side-link" data-target="hostel-mgmt"><span class="ic">🏨</span><span class="label">Hostel &amp; Mess</span></a>
+      <a href="#library-mgmt" class="side-link" data-target="library-mgmt"><span class="ic">📚</span><span class="label">Library &amp; Fines</span></a>
+      <a href="#announcements-mgmt" class="side-link" data-target="announcements-mgmt"><span class="ic">📣</span><span class="label">Announcements</span></a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <a href="classic-dashboard.html" style="color:var(--brass, #d4a373); font-size:0.82rem; font-weight:600; text-decoration:none; display:flex; align-items:center; gap:8px; padding:6px 12px; margin-bottom:12px; border-radius:6px; background:rgba(255,255,255,0.06);">
+        <span>💡</span><span>Classic Viva Lab ↗</span>
+      </a>
+      <div class="side-user">
+        <div class="side-avatar" id="avatarInitials">RV</div>
+        <div>
+          <div class="side-user-name" id="sideUserName">Rahul Verma</div>
+          <div class="side-user-role">Administrator</div>
+        </div>
+      </div>
+      <a href="login.html" class="logout-link" id="logoutBtn">↩ <span>Log out</span></a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="dash-main">
+    <header class="topbar">
+      <div>
+        <h1 id="pageTitle">Overview</h1>
+        <div class="topbar-sub">Campus Academic &amp; Facility Administration</div>
+      </div>
+      <div class="topbar-right">
+        <div id="connectionStatusBadge" class="badge green" style="font-size:0.75rem;">● Server Connected</div>
+        <a href="classic-dashboard.html" class="btn btn-ghost btn-sm" style="font-size:0.78rem;">Viva View</a>
+        <div class="bell" title="Notifications">🔔<span class="dot"></span></div>
+        <div class="side-avatar" id="topbarAvatar" style="background:var(--navy); color:#fff;">RV</div>
+      </div>
+    </header>
+
+    <div class="dash-body-inner">
+
+      <!-- OVERVIEW -->
+      <section class="dash-section active" id="overview">
+        <div class="stat-grid">
+          <div class="stat-panel"><div class="label">Total students</div><div class="value">4,280</div><div class="delta">+62 this term</div></div>
+          <div class="stat-panel"><div class="label">Faculty members</div><div class="value">312</div><div class="delta">Across 18 departments</div></div>
+          <div class="stat-panel"><div class="label">Active courses</div><div class="value">146</div><div class="delta">KTU Semester 3 &amp; 5</div></div>
+          <div class="stat-panel"><div class="label">Avg. attendance</div><div class="value">89.6%</div><div class="delta down">-2.1% vs last month</div></div>
+        </div>
+
+        <div class="dash-grid-2">
+          <div class="panel">
+            <div class="panel-head"><h3>Recent Admissions &amp; Registrations</h3></div>
+            <table class="data-table">
+              <thead><tr><th>ID</th><th>Name</th><th>Course</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>S101</td><td>Rahul Sharma</td><td>B.Tech Computer Science (S3)</td><td><span class="badge green">Enrolled</span></td></tr>
+                <tr><td>S102</td><td>Priya Nair</td><td>B.Tech Computer Science (S3)</td><td><span class="badge green">Enrolled</span></td></tr>
+                <tr><td>STU202</td><td>Anjali Menon</td><td>B.Tech Electronics (S3)</td><td><span class="badge green">Hostel Assigned</span></td></tr>
+                <tr><td>STU203</td><td>Rohan Das</td><td>B.Tech Mechanical (S5)</td><td><span class="badge green">Hostel Assigned</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Administrative Alerts</h3></div>
+            <div class="panel-body">
+              <div class="notif-item"><div class="notif-dot" style="background:var(--red);"></div><div><p><strong>EST200 Attendance:</strong> 8 students below KTU 75% cutoff threshold.</p><div class="notif-time">3 hours ago</div></div></div>
+              <div class="notif-item"><div class="notif-dot"></div><div><p>Sports Facility: Football Turf and Basketball reservations peaking for evening slots.</p><div class="notif-time">5 hours ago</div></div></div>
+              <div class="notif-item"><div class="notif-dot"></div><div><p>Central Library: All 5 core engineering textbooks cataloged and ready for loan issuance.</p><div class="notif-time">1 day ago</div></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STUDENT MANAGEMENT -->
+      <section class="dash-section" id="students">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Student Directory &amp; Academic Status</h3>
+            <button class="btn btn-primary btn-sm" onclick="alert('Student directory sync active via SQLite/JSON persistence.')">+ Add Student</button>
+          </div>
+          <div class="panel-body" style="padding-bottom:0;">
+            <div class="inline-form">
+              <input type="text" placeholder="Search by name or ID (e.g. S101)" id="studentSearchInput">
+              <select><option>All Branches (CSE, ECE, ME)</option><option>B.Tech CS</option><option>B.Tech Mechanical</option></select>
+              <select><option>All Semesters</option><option>Semester 3 (KTU)</option><option>Semester 5</option></select>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>Name</th><th>Branch &amp; Semester</th><th>Overall Attd.</th><th>SGPA</th><th>Fines</th></tr></thead>
+            <tbody>
+              <tr><td><strong>S101</strong></td><td>Rahul Sharma</td><td>B.Tech CSE · S3</td><td>87.7%</td><td>8.85</td><td><span class="badge green">Rs. 0.00</span></td></tr>
+              <tr><td><strong>S102</strong></td><td>Priya Nair</td><td>B.Tech CSE · S3</td><td>93.2%</td><td>9.12</td><td><span class="badge green">Rs. 0.00</span></td></tr>
+              <tr><td><strong>STU202</strong></td><td>Anjali Menon</td><td>B.Tech ECE · S3</td><td>89.0%</td><td>8.40</td><td><span class="badge green">Rs. 0.00</span></td></tr>
+              <tr><td><strong>STU203</strong></td><td>Rohan Das</td><td>B.Tech ME · S5</td><td>81.5%</td><td>7.80</td><td><span class="badge green">Rs. 0.00</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- FACULTY MANAGEMENT -->
+      <section class="dash-section" id="faculty">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Faculty Management</h3>
+            <button class="btn btn-primary btn-sm">+ Add Faculty</button>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Courses Taught</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>F201</strong></td><td>Dr. Joseph Kurian</td><td>Computer Science</td><td>CST205: OOP Using Java</td><td><span class="badge green">Active</span></td></tr>
+              <tr><td><strong>FAC-108</strong></td><td>Dr. Leena Fernandes</td><td>Mathematics &amp; CS</td><td>MAT203: Discrete Math</td><td><span class="badge green">Active</span></td></tr>
+              <tr><td><strong>FAC-092</strong></td><td>Prof. Arvind Rao</td><td>Computer Science</td><td>CST201: Data Structures</td><td><span class="badge green">Active</span></td></tr>
+              <tr><td><strong>FAC-115</strong></td><td>Dr. Meera Iyer</td><td>Computer Science</td><td>CST203: Logic System Design</td><td><span class="badge green">Active</span></td></tr>
+              <tr><td><strong>FAC-073</strong></td><td>Prof. Susan Thomas</td><td>Civil / Mechanical</td><td>EST200: Design &amp; Engineering</td><td><span class="badge green">Active</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- COURSE MANAGEMENT -->
+      <section class="dash-section" id="course-mgmt">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Course Curriculum Management (KTU S3 CSE)</h3>
+            <button class="btn btn-primary btn-sm">+ Add Course</button>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Code</th><th>Course Name</th><th>Department</th><th>Credits</th><th>Enrolled</th><th>Hours/Wk</th></tr></thead>
+            <tbody>
+              <tr><td><strong>MAT203</strong></td><td>Discrete Mathematical Structures</td><td>Mathematics</td><td>4</td><td>128</td><td>4</td></tr>
+              <tr><td><strong>CST201</strong></td><td>Data Structures</td><td>Computer Science</td><td>4</td><td>128</td><td>4</td></tr>
+              <tr><td><strong>CST203</strong></td><td>Logic System Design</td><td>Computer Science</td><td>4</td><td>128</td><td>4</td></tr>
+              <tr><td><strong>CST205</strong></td><td>Object Oriented Programming Using Java</td><td>Computer Science</td><td>4</td><td>128</td><td>4</td></tr>
+              <tr><td><strong>EST200</strong></td><td>Design &amp; Engineering</td><td>Engineering Science</td><td>2</td><td>128</td><td>2</td></tr>
+              <tr><td><strong>MCN201</strong></td><td>Sustainable Engineering</td><td>Multidisciplinary</td><td>0 (Audit)</td><td>128</td><td>2</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TIMETABLE MANAGEMENT -->
+      <section class="dash-section" id="timetable-mgmt">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Master Timetable Allocation</h3>
+            <button class="btn btn-primary btn-sm">+ Add Slot</button>
+          </div>
+          <div class="panel-body" style="padding-bottom:0;">
+            <div class="inline-form">
+              <select><option>B.Tech CSE — Semester 3 (Room 204)</option><option>B.Tech CSE — Semester 5 (Room 301)</option></select>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Day</th><th>Time Slot</th><th>Course Code &amp; Title</th><th>Faculty In-Charge</th><th>Room</th></tr></thead>
+            <tbody>
+              <tr><td>Monday</td><td>09:00 – 10:00</td><td>MAT203: Discrete Math</td><td>Dr. Leena Fernandes</td><td>Room 204</td></tr>
+              <tr><td>Monday</td><td>11:00 – 12:00</td><td>CST205: OOP Using Java</td><td>Dr. Joseph Kurian</td><td>Room 204</td></tr>
+              <tr><td>Monday</td><td>14:00 – 16:00</td><td>Java Lab / Programming Lab</td><td>Dr. Joseph Kurian</td><td>Computing Lab 2</td></tr>
+              <tr><td>Tuesday</td><td>09:00 – 10:00</td><td>CST201: Data Structures</td><td>Prof. Arvind Rao</td><td>Room 204</td></tr>
+              <tr><td>Wednesday</td><td>09:00 – 10:00</td><td>MAT203: Discrete Math</td><td>Dr. Leena Fernandes</td><td>Room 204</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ATTENDANCE MANAGEMENT -->
+      <section class="dash-section" id="attendance-mgmt">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Attendance Monitoring &amp; KTU 75% Audit</h3>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Course Code &amp; Title</th><th>Average Attendance</th><th>Students &lt;75% Cutoff</th><th>Action Required</th></tr></thead>
+            <tbody>
+              <tr><td><strong>MAT203:</strong> Discrete Math</td><td>91.4%</td><td>3 students</td><td><span class="badge green">Normal</span></td></tr>
+              <tr><td><strong>CST201:</strong> Data Structures</td><td>88.6%</td><td>5 students</td><td><span class="badge green">Normal</span></td></tr>
+              <tr><td><strong>CST203:</strong> Logic System Design</td><td>83.2%</td><td>7 students</td><td><span class="badge green">Normal</span></td></tr>
+              <tr><td><strong>CST205:</strong> OOP Using Java</td><td>95.1%</td><td>1 student</td><td><span class="badge green">Excellent</span></td></tr>
+              <tr><td><strong>EST200:</strong> Design &amp; Engineering</td><td>73.8%</td><td>18 students</td><td><span class="badge red">Notice Issued</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- FACILITIES MANAGEMENT -->
+      <section class="dash-section" id="facilities-mgmt">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Sports Courts &amp; Turf Facilities</h3>
+            <span class="badge green">Live Sync with Embedded Server</span>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Facility ID</th><th>Facility Name</th><th>Location</th><th>Type</th><th>Hours</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>CRT1</strong></td><td>🏸 Badminton Court</td><td>Indoor Sports Hall</td><td>Indoor · Wooden Court</td><td>06:00 – 21:00</td><td><span class="badge green">Operational</span></td></tr>
+              <tr><td><strong>CRT2</strong></td><td>🎾 Tennis Court</td><td>East Sports Complex</td><td>Outdoor · Clay Court</td><td>06:00 – 21:00</td><td><span class="badge green">Operational</span></td></tr>
+              <tr><td><strong>CRT3</strong></td><td>🏀 Basketball Court A</td><td>North Sports Block</td><td>Outdoor · Hard Court</td><td>06:00 – 21:00</td><td><span class="badge green">Operational</span></td></tr>
+              <tr><td><strong>CRT4</strong></td><td>⚽ Football Turf</td><td>Main University Ground</td><td>Outdoor · Synthetic Turf</td><td>06:00 – 21:00</td><td><span class="badge green">Operational</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Active Slot Reservations (All Students &amp; Faculty)</h3>
+            <button type="button" class="btn btn-outline btn-sm" id="refreshAdminBookingsBtn">Refresh Bookings</button>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Facility</th><th>Date</th><th>Time Slot</th><th>Reserved By</th><th>Action</th></tr></thead>
+            <tbody id="allReservationsBody">
+              <tr><td colspan="5" style="color:var(--ink-soft);">Loading reservations…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- HOSTEL & MESS (ADMIN) -->
+      <section class="dash-section" id="hostel-mgmt">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Hostel Residents &amp; Mess Billing Overview</h3>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Roll No</th><th>Student Name</th><th>Room No &amp; Type</th><th>Room Tariff</th><th>Meal Plan</th><th>Leaves</th><th>Actions</th></tr></thead>
+            <tbody id="adminHostelStudentsTable">
+              <tr>
+                <td><strong>STU202</strong></td>
+                <td>Anjali Menon</td>
+                <td>Room 302 (Single Occupancy)</td>
+                <td>Rs. 5,400.00</td>
+                <td>Standard Plan</td>
+                <td>0 days</td>
+                <td><a href="classic-dashboard.html" class="btn btn-ghost btn-sm">Manage in Viva Lab</a></td>
+              </tr>
+              <tr>
+                <td><strong>STU203</strong></td>
+                <td>Rohan Das</td>
+                <td>Room 101 (AC Suite)</td>
+                <td>Rs. 7,500.00</td>
+                <td>Special Diet Plan</td>
+                <td>0 days</td>
+                <td><a href="classic-dashboard.html" class="btn btn-ghost btn-sm">Manage in Viva Lab</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- LIBRARY & FINES (ADMIN) -->
+      <section class="dash-section" id="library-mgmt">
+        <div class="dash-grid-2">
+          <div class="panel">
+            <div class="panel-head"><h3>Central Library Catalog Inventory</h3></div>
+            <table class="data-table">
+              <thead><tr><th>Book Title</th><th>ISBN</th><th>Category</th><th>Availability</th></tr></thead>
+              <tbody id="adminLibraryTable">
+                <tr><td>Introduction to Algorithms</td><td>978-0262033848</td><td>Computer Science</td><td><span class="badge green">Available</span></td></tr>
+                <tr><td>Operating System Concepts</td><td>978-1118063330</td><td>Systems</td><td><span class="badge green">Available</span></td></tr>
+                <tr><td>Database System Concepts</td><td>978-0078022159</td><td>Databases</td><td><span class="badge green">Available</span></td></tr>
+                <tr><td>Computer Networks</td><td>978-0132126953</td><td>Networks</td><td><span class="badge green">Available</span></td></tr>
+                <tr><td>Clean Code</td><td>978-0132350884</td><td>Software Engg</td><td><span class="badge green">Available</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><h3>Campus Accounts Fine Balances</h3></div>
+            <table class="data-table">
+              <thead><tr><th>User ID</th><th>Name</th><th>Role</th><th>Outstanding Fine</th></tr></thead>
+              <tbody>
+                <tr><td><strong>S101</strong></td><td>Rahul Sharma</td><td>Student</td><td><span class="badge green">Rs. 0.00</span></td></tr>
+                <tr><td><strong>S102</strong></td><td>Priya Nair</td><td>Student</td><td><span class="badge green">Rs. 0.00</span></td></tr>
+                <tr><td><strong>F201</strong></td><td>Dr. Joseph Kurian</td><td>Faculty</td><td><span class="badge green">Rs. 0.00</span></td></tr>
+                <tr><td><strong>C301</strong></td><td>Coach Vikram</td><td>Coach</td><td><span class="badge green">Rs. 0.00</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ANNOUNCEMENTS (ADMIN) -->
+      <section class="dash-section" id="announcements-mgmt">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Post Campus Announcement</h3>
+          </div>
+          <div class="panel-body">
+            <div class="field" style="margin-bottom:12px;">
+              <label for="annTitle" style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">Announcement Title</label>
+              <input type="text" id="annTitle" placeholder="e.g. KTU Semester 3 Exam Registration Opens" style="width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:6px; font-family:inherit;">
+            </div>
+            <div class="field" style="margin-bottom:12px;">
+              <label for="annBody" style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">Message Content</label>
+              <textarea id="annBody" rows="3" placeholder="Details for students, faculty and researchers…" style="width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:6px; font-family:inherit; resize:vertical;"></textarea>
+            </div>
+            <div class="inline-form" style="margin-bottom:0;">
+              <select><option>Audience: All Campus</option><option>Audience: KTU S3 Students</option><option>Audience: Faculty Only</option></select>
+              <button class="btn btn-primary btn-sm" type="button" onclick="alert('Announcement broadcast to campus notices.')">Publish Announcement</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/dashboard.js" defer></script>
+<script src="js/sports.js" defer></script>
+<script src="js/campus-api.js" defer></script>
+</body>
+</html>
