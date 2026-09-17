@@ -86,6 +86,30 @@
   </div>
 </div>
 
+<!-- Google OAuth 2.0 Configuration Modal -->
+<div id="googleConfigModal" style="display:none; position:fixed; inset:0; background:rgba(18,24,38,0.75); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; border-radius:12px; max-width:440px; width:100%; padding:28px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+      <svg width="24" height="24" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
+      <h3 style="margin:0; font-size:1.15rem; color:var(--navy);">Google OAuth 2.0 Client Setup</h3>
+    </div>
+    <p style="font-size:0.85rem; color:var(--ink-soft); line-height:1.5; margin-bottom:16px;">
+      To launch the live Google Account popup from <code>accounts.google.com</code>, enter your Google OAuth 2.0 Web Client ID:
+    </p>
+    <div class="field" style="margin-bottom:14px;">
+      <label style="font-size:0.8rem; font-weight:600; display:block; margin-bottom:6px;">Google Web Client ID</label>
+      <input type="text" id="googleClientIdInput" placeholder="e.g. 123456789-abc.apps.googleusercontent.com" style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:6px; font-size:0.85rem; box-sizing:border-box;">
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <button type="button" class="btn btn-primary btn-block" id="saveGoogleClientBtn">Save &amp; Open Google Login</button>
+      <button type="button" class="btn btn-ghost btn-block" id="closeGoogleModalBtn">Cancel</button>
+    </div>
+    <p style="font-size:0.75rem; color:var(--ink-soft); margin-top:14px; margin-bottom:0;">
+      💡 Free Client ID: <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--navy); font-weight:600;">Google Cloud Console ↗</a> (Origins: <code>http://localhost:8080</code> &amp; Cloudflare URL).
+    </p>
+  </div>
+</div>
+
 <script src="js/login.js" defer></script>
 </body>
 </html>
