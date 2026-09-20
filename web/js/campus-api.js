@@ -12,7 +12,8 @@
     HOSTEL_LEAVE: '/api/hostel/leave',
     HOSTEL_BILL: '/api/hostel/bill',
     LIBRARY_BORROW: '/api/library/borrow',
-    LIBRARY_RETURN: '/api/library/return'
+    LIBRARY_RETURN: '/api/library/return',
+    FINE: '/api/fine'
   };
 
   let isServerLive = false;
@@ -206,6 +207,109 @@
     });
   }
 
+  function initFinesSection() {
+    const payFineBtn = document.getElementById('payFineBtn');
+    const payFineInput = document.getElementById('payFineAmount');
+
+    if (payFineBtn) {
+      payFineBtn.addEventListener('click', async () => {
+        const amt = parseFloat(payFineInput.value);
+        if (isNaN(amt) || amt <= 0) {
+          showToast('Please enter a valid amount.');
+          return;
+        }
+
+        const userProfileRaw = sessionStorage.getItem('ridgeview_profile');
+        let userId = 'S101';
+        if (userProfileRaw) {
+          try { userId = JSON.parse(userProfileRaw).id || 'S101'; } catch(e){}
+        }
+
+        if (isServerLive) {
+          try {
+            const res = await fetch(API.FINE, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: userId, action: 'pay', amount: amt })
+            });
+            const data = await res.json();
+            if (data.success) {
+              showToast(`Payment of Rs. ${amt.toFixed(2)} received successfully!`);
+              updateFineBalanceUI(data.fineBalance);
+            } else {
+              showToast(data.error || 'Payment failed.');
+            }
+          } catch(e) {
+            showToast('Network error processing payment.');
+          }
+        } else {
+          showToast(`Payment of Rs. ${amt.toFixed(2)} processed!`);
+          updateFineBalanceUI(0);
+        }
+      });
+    }
+
+    const adminAddBtn = document.getElementById('adminAddFineBtn');
+    const adminPayBtn = document.getElementById('adminPayFineBtn');
+    const adminUserInput = document.getElementById('adminFineUserId');
+    const adminAmtInput = document.getElementById('adminFineAmount');
+
+    const handleAdminFine = async (action) => {
+      const uid = adminUserInput ? adminUserInput.value.trim() : '';
+      const amt = parseFloat(adminAmtInput ? adminAmtInput.value : '0');
+      if (!uid || isNaN(amt) || amt <= 0) {
+        showToast('Please specify target User ID and valid amount.');
+        return;
+      }
+
+      if (isServerLive) {
+        try {
+          const res = await fetch(API.FINE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: uid, action: action, amount: amt })
+          });
+          const data = await res.json();
+          if (data.success) {
+            showToast(`User ${uid}: fine balance updated to Rs. ${data.fineBalance.toFixed(2)}.`);
+            checkServerStatus();
+          } else {
+            showToast(data.error || 'Operation failed.');
+          }
+        } catch(e) {
+          showToast('Error communicating with server.');
+        }
+      } else {
+        showToast(`Offline demo: User ${uid} fine ${action === 'add' ? 'assessed' : 'waived'} (Rs. ${amt}).`);
+      }
+    };
+
+    if (adminAddBtn) adminAddBtn.addEventListener('click', () => handleAdminFine('add'));
+    if (adminPayBtn) adminPayBtn.addEventListener('click', () => handleAdminFine('pay'));
+  }
+
+  function updateFineBalanceUI(bal) {
+    const fineEl = document.getElementById('pFineStatus');
+    const libFineEl = document.getElementById('libFineBalance');
+    const finesTotalDue = document.getElementById('finesTotalDue');
+    const finesDeltaMsg = document.getElementById('finesDeltaMsg');
+    const finesBadge = document.getElementById('finesAccountBadge');
+
+    if (bal > 0) {
+      if (fineEl) fineEl.innerHTML = `<span class="badge red">Overdue Fine: Rs. ${bal.toFixed(2)}</span>`;
+      if (libFineEl) libFineEl.textContent = `Rs. ${bal.toFixed(2)}`;
+      if (finesTotalDue) finesTotalDue.textContent = `Rs. ${bal.toFixed(2)}`;
+      if (finesDeltaMsg) finesDeltaMsg.textContent = 'Account hold active: facility booking restricted';
+      if (finesBadge) { finesBadge.textContent = 'Action Required'; finesBadge.className = 'badge red'; }
+    } else {
+      if (fineEl) fineEl.innerHTML = `<span class="badge green">Zero Dues (Rs. 0.00)</span>`;
+      if (libFineEl) libFineEl.textContent = `Rs. 0.00`;
+      if (finesTotalDue) finesTotalDue.textContent = `Rs. 0.00`;
+      if (finesDeltaMsg) finesDeltaMsg.textContent = 'Zero outstanding overdue penalties';
+      if (finesBadge) { finesBadge.textContent = 'Good Standing'; finesBadge.className = 'badge green'; }
+    }
+  }
+
   function onServerDataLoaded(data) {
     if (!data) return;
 
@@ -216,15 +320,7 @@
         const prof = JSON.parse(userProfileRaw);
         const serverUser = data.users.find(u => u.userId.toUpperCase() === prof.id.toUpperCase());
         if (serverUser) {
-          const fineEl = document.getElementById('pFineStatus');
-          const libFineEl = document.getElementById('libFineBalance');
-          if (serverUser.fineBalance > 0) {
-            if (fineEl) fineEl.innerHTML = `<span class="badge red">Overdue Fine: Rs. ${serverUser.fineBalance.toFixed(2)}</span>`;
-            if (libFineEl) libFineEl.textContent = `Rs. ${serverUser.fineBalance.toFixed(2)}`;
-          } else {
-            if (fineEl) fineEl.innerHTML = `<span class="badge green">Zero Dues (Rs. 0.00)</span>`;
-            if (libFineEl) libFineEl.textContent = `Rs. 0.00`;
-          }
+          updateFineBalanceUI(serverUser.fineBalance || 0);
         }
       } catch (e) {}
     }
@@ -240,7 +336,21 @@
           <td>Rs. ${Number(hs.roomTariff).toFixed(2)}</td>
           <td>${hs.mealPlan}</td>
           <td>${hs.leavesThisMonth} days</td>
-          <td><a href="classic-dashboard.html" class="btn btn-ghost btn-sm">Manage in Classic Console</a></td>
+          <td><span class="badge green">Active Resident</span></td>
+        </tr>
+      `).join('');
+    }
+
+    const adminFinesTable = document.getElementById('adminFinesTable');
+    if (adminFinesTable && data.users && data.users.length > 0) {
+      adminFinesTable.innerHTML = data.users.map(u => `
+        <tr>
+          <td><strong>${u.userId}</strong></td>
+          <td>${u.name}</td>
+          <td>${u.role}</td>
+          <td>Rs. ${Number(u.fineBalance).toFixed(2)}</td>
+          <td><span class="badge ${u.fineBalance > 0 ? 'red' : 'green'}">${u.fineBalance > 0 ? 'Hold' : 'Clear'}</span></td>
+          <td><button class="btn btn-ghost btn-sm" onclick="document.getElementById('adminFineUserId').value='${u.userId}'">Select</button></td>
         </tr>
       `).join('');
     }
@@ -250,5 +360,6 @@
     checkServerStatus();
     initHostelSection();
     initLibrarySection();
+    initFinesSection();
   });
 })();

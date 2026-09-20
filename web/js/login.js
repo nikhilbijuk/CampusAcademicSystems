@@ -59,8 +59,8 @@ function setRole(role) {
   tabAdmin.setAttribute('aria-selected', String(!isStudent));
   formTitle.textContent = isStudent ? 'Student login' : 'Administrator login';
   formSubtitle.textContent = isStudent
-    ? 'Sign in with your student ID or email to view KTU courses, attendance and results.'
-    : 'Sign in with your staff ID or email to manage campus facilities and academics.';
+    ? 'Sign in with your student ID or email to access campus facilities, mess billing, and clearances.'
+    : 'Sign in with your staff ID or email to manage campus facilities and operations.';
   identifierLabel.textContent = isStudent ? 'Student ID or Email' : 'Staff ID or Email';
   formError.classList.remove('visible');
 }

@@ -22,16 +22,12 @@
 
     <div class="side-label">Menu</div>
     <nav class="side-nav" id="sideNav">
-      <a href="#profile" class="side-link active" data-target="profile"><span class="ic">◈</span><span class="label">Profile</span></a>
-      <a href="#courses" class="side-link" data-target="courses"><span class="ic">📘</span><span class="label">Courses</span></a>
-      <a href="#attendance" class="side-link" data-target="attendance"><span class="ic">✅</span><span class="label">Attendance</span></a>
-      <a href="#timetable" class="side-link" data-target="timetable"><span class="ic">🗓️</span><span class="label">Timetable</span></a>
-      <a href="#assignments" class="side-link" data-target="assignments"><span class="ic">📝</span><span class="label">Assignments &amp; CIE</span></a>
-      <a href="#results" class="side-link" data-target="results"><span class="ic">📊</span><span class="label">Results &amp; SGPA</span></a>
-      <a href="#sports" class="side-link" data-target="sports"><span class="ic">🏟️</span><span class="label">Sports Booking</span></a>
+      <a href="#profile" class="side-link active" data-target="profile"><span class="ic">◈</span><span class="label">Profile &amp; Identity</span></a>
+      <a href="#sports" class="side-link" data-target="sports"><span class="ic">🏟️</span><span class="label">Sports &amp; Courts</span></a>
       <a href="#hostel" class="side-link" data-target="hostel"><span class="ic">🏨</span><span class="label">Hostel &amp; Mess</span></a>
-      <a href="#library" class="side-link" data-target="library"><span class="ic">📚</span><span class="label">Library &amp; Fines</span></a>
-      <a href="#notifications" class="side-link" data-target="notifications"><span class="ic">🔔</span><span class="label">Notifications</span></a>
+      <a href="#library" class="side-link" data-target="library"><span class="ic">📚</span><span class="label">Central Library</span></a>
+      <a href="#fines" class="side-link" data-target="fines"><span class="ic">💳</span><span class="label">Clearances &amp; Dues</span></a>
+      <a href="#notifications" class="side-link" data-target="notifications"><span class="ic">🔔</span><span class="label">Bulletins &amp; Notices</span></a>
     </nav>
 
     <div class="sidebar-foot">
@@ -84,199 +80,94 @@
           </div>
           <div style="display:flex; flex-direction:column; gap:16px;">
             <div class="stat-panel">
-              <div class="label">Overall Semester Attendance</div>
-              <div class="value" id="overallAttendanceVal">87%</div>
-              <div class="delta">Above KTU 75% minimum threshold</div>
+              <div class="label">Sports Facility Booking Quota</div>
+              <div class="value" id="profileSportsQuota">2 Slots</div>
+              <div class="delta">Concurrent Active Reservations Allowed</div>
             </div>
             <div class="stat-panel">
-              <div class="label">Current Cumulative SGPA</div>
-              <div class="value" id="overallSgpaVal">8.85</div>
-              <div class="delta">KTU 10-Point Credit System</div>
+              <div class="label">Central Library Loan Privilege</div>
+              <div class="value" id="profileLibraryQuota">3 Books</div>
+              <div class="delta">14-day circulating loan window</div>
+            </div>
+            <div class="stat-panel">
+              <div class="label">Hostel &amp; Mess Account Status</div>
+              <div class="value" id="profileHostelStatusVal">Active Resident</div>
+              <div class="delta">Single Occupancy · Room 302</div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- COURSES -->
-      <section class="dash-section" id="courses">
-        <div class="panel">
-          <div class="panel-head">
-            <h3>Enrolled KTU Courses — Semester 3 (CSE)</h3>
-            <span class="badge green">Active Semester</span>
-          </div>
-          <table class="data-table">
-            <thead><tr><th>Code</th><th>Course Name</th><th>Instructor</th><th>Credits</th><th>Hours/Wk</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr><td><strong>MAT203</strong></td><td>Discrete Mathematical Structures</td><td>Dr. Leena Fernandes</td><td>4</td><td>4</td><td><span class="badge green">In progress</span></td></tr>
-              <tr><td><strong>CST201</strong></td><td>Data Structures</td><td>Prof. Arvind Rao</td><td>4</td><td>4</td><td><span class="badge green">In progress</span></td></tr>
-              <tr><td><strong>CST203</strong></td><td>Logic System Design</td><td>Dr. Meera Iyer</td><td>4</td><td>4</td><td><span class="badge green">In progress</span></td></tr>
-              <tr><td><strong>CST205</strong></td><td>Object Oriented Programming Using Java</td><td>Dr. Joseph Kurian</td><td>4</td><td>4</td><td><span class="badge green">In progress</span></td></tr>
-              <tr><td><strong>EST200</strong></td><td>Design &amp; Engineering</td><td>Prof. Susan Thomas</td><td>2</td><td>2</td><td><span class="badge amber">Warning (&lt;75%)</span></td></tr>
-              <tr><td><strong>MCN201</strong></td><td>Sustainable Engineering</td><td>Dr. Kavya Nair</td><td>0 (Audit)</td><td>2</td><td><span class="badge green">In progress</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- ATTENDANCE -->
-      <section class="dash-section" id="attendance">
+      <!-- CLEARANCES & FINES -->
+      <section class="dash-section" id="fines">
         <div class="dash-grid-2">
           <div class="panel">
             <div class="panel-head">
-              <h3>Attendance by Subject</h3>
-              <span class="badge green">Minimum Req: 75%</span>
+              <h3>Campus Financial Clearances &amp; Account Standing</h3>
+              <span class="badge green" id="finesAccountBadge">Good Standing</span>
             </div>
-            <div class="panel-body" style="display:flex; flex-direction:column; gap:20px;">
-              <div>
-                <div style="display:flex; justify-content:space-between; font-size:.85rem; margin-bottom:6px;">
-                  <span><strong>MAT203:</strong> Discrete Mathematical Structures</span><span>92% (46/50)</span>
-                </div>
-                <div class="progress"><span style="width:92%;"></span></div>
-              </div>
-              <div>
-                <div style="display:flex; justify-content:space-between; font-size:.85rem; margin-bottom:6px;">
-                  <span><strong>CST201:</strong> Data Structures</span><span>88% (44/50)</span>
-                </div>
-                <div class="progress"><span style="width:88%;"></span></div>
-              </div>
-              <div>
-                <div style="display:flex; justify-content:space-between; font-size:.85rem; margin-bottom:6px;">
-                  <span><strong>CST203:</strong> Logic System Design</span><span>82% (41/50)</span>
-                </div>
-                <div class="progress"><span style="width:82%;"></span></div>
-              </div>
-              <div>
-                <div style="display:flex; justify-content:space-between; font-size:.85rem; margin-bottom:6px;">
-                  <span><strong>CST205:</strong> OOP Using Java</span><span>96% (48/50)</span>
-                </div>
-                <div class="progress"><span style="width:96%;"></span></div>
-              </div>
-              <div>
-                <div style="display:flex; justify-content:space-between; font-size:.85rem; margin-bottom:6px;">
-                  <span style="color:var(--red);"><strong>EST200:</strong> Design &amp; Engineering ⚠️</span><span style="color:var(--red); font-weight:700;">72% (18/25)</span>
-                </div>
-                <div class="progress low"><span style="width:72%;"></span></div>
-              </div>
-              <div>
-                <div style="display:flex; justify-content:space-between; font-size:.85rem; margin-bottom:6px;">
-                  <span><strong>MCN201:</strong> Sustainable Engineering</span><span>90% (18/20)</span>
-                </div>
-                <div class="progress"><span style="width:90%;"></span></div>
-              </div>
+            <div class="panel-body">
+              <p style="font-size:0.88rem; color:var(--ink-soft); line-height:1.6; margin-bottom:18px;">
+                The central campus ledger tracks dining fees, overdue library fines, and facility usage charges. Accounts with zero outstanding holds enjoy uninterrupted access to sports courts, textbook renewals, and campus services.
+              </p>
+              <table class="data-table">
+                <thead><tr><th>Service / Category</th><th>Description</th><th>Assessment Period</th><th>Due Amount</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Central Library</strong></td>
+                    <td>Circulation &amp; Textbook Overdue</td>
+                    <td>Current Cycle</td>
+                    <td id="tableLibDue">Rs. 0.00</td>
+                    <td><span class="badge green">Cleared</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Hostel &amp; Mess</strong></td>
+                    <td>Monthly Room &amp; Meal Services</td>
+                    <td>Current Cycle</td>
+                    <td id="tableMessDue">Rs. 9,900.00</td>
+                    <td><span class="badge amber">Due by Month End</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Sports &amp; Courts</strong></td>
+                    <td>Facility Reservation &amp; Equipment</td>
+                    <td>Current Cycle</td>
+                    <td>Rs. 0.00</td>
+                    <td><span class="badge green">Cleared</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Disciplinary / Conduct</strong></td>
+                    <td>Administrative Hold Surcharges</td>
+                    <td>Current Cycle</td>
+                    <td>Rs. 0.00</td>
+                    <td><span class="badge green">Zero Penalties</span></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
           <div style="display:flex; flex-direction:column; gap:16px;">
-            <div class="panel" style="border-left:4px solid var(--red);">
-              <div class="panel-head"><h3 style="color:var(--red);">⚠️ KTU Attendance Warning</h3></div>
-              <div class="panel-body">
-                <p style="font-size:0.86rem; line-height:1.6; margin-bottom:12px;">
-                  Your attendance in <strong>EST200: Design &amp; Engineering</strong> is currently <strong>72.0%</strong>, which is below the mandatory KTU 75% exam cutoff.
-                </p>
-                <div class="badge red" style="margin-bottom:10px;">Condonation / Detention Risk</div>
-                <p style="font-size:0.82rem; color:var(--ink-soft);">
-                  You must attend the next <strong>2 consecutive classes</strong> to bring your attendance back above 75.0% and secure end-semester exam registration.
-                </p>
-              </div>
-            </div>
             <div class="stat-panel">
-              <div class="label">Total Classes Attended</div>
-              <div class="value">215 / 245</div>
-              <div class="delta">87.7% Aggregate Presence</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TIMETABLE -->
-      <section class="dash-section" id="timetable">
-        <div class="panel">
-          <div class="panel-head">
-            <h3>Weekly Timetable — Semester 3 CSE (Room 204)</h3>
-          </div>
-          <div class="panel-body">
-            <div class="timetable">
-              <div class="tt-cell tt-head" style="background:transparent;"></div>
-              <div class="tt-cell tt-head">Mon</div>
-              <div class="tt-cell tt-head">Tue</div>
-              <div class="tt-cell tt-head">Wed</div>
-              <div class="tt-cell tt-head">Thu</div>
-              <div class="tt-cell tt-head">Fri</div>
-
-              <div class="tt-cell tt-time">9:00</div>
-              <div class="tt-cell tt-class">MAT203<small>Room 204</small></div>
-              <div class="tt-cell tt-class">CST201<small>Room 204</small></div>
-              <div class="tt-cell tt-class">MAT203<small>Room 204</small></div>
-              <div class="tt-cell tt-class">CST203<small>Room 204</small></div>
-              <div class="tt-cell tt-class">CST205<small>Room 204</small></div>
-
-              <div class="tt-cell tt-time">11:00</div>
-              <div class="tt-cell tt-class">CST205<small>Room 204</small></div>
-              <div class="tt-cell tt-class">EST200<small>Room 110</small></div>
-              <div class="tt-cell tt-class">CST201<small>Room 204</small></div>
-              <div class="tt-cell tt-class">CST205<small>Room 204</small></div>
-              <div class="tt-cell tt-class">MCN201<small>Room 204</small></div>
-
-              <div class="tt-cell tt-time">2:00</div>
-              <div class="tt-cell tt-class">Java Lab<small>Computing Lab 2</small></div>
-              <div class="tt-cell tt-class">Java Lab<small>Computing Lab 2</small></div>
-              <div class="tt-cell tt-class">DS Lab<small>Systems Lab 1</small></div>
-              <div class="tt-cell tt-class">DS Lab<small>Systems Lab 1</small></div>
-              <div class="tt-cell tt-class">Sports / Library<small>Campus Ground</small></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ASSIGNMENTS & CIE -->
-      <section class="dash-section" id="assignments">
-        <div class="panel">
-          <div class="panel-head">
-            <h3>Continuous Internal Evaluation (CIE / 50) &amp; Assignments</h3>
-          </div>
-          <table class="data-table">
-            <thead><tr><th>Course</th><th>Series 1 (15)</th><th>Series 2 (15)</th><th>Assignments (20)</th><th>Total CIE (/50)</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr><td><strong>MAT203: Discrete Math</strong></td><td>13.5</td><td>14.0</td><td>19.0</td><td><strong>46.5</strong></td><td><span class="badge green">Excellent</span></td></tr>
-              <tr><td><strong>CST201: Data Structures</strong></td><td>12.0</td><td>13.5</td><td>18.5</td><td><strong>44.0</strong></td><td><span class="badge green">Good</span></td></tr>
-              <tr><td><strong>CST203: Logic System Design</strong></td><td>11.5</td><td>12.0</td><td>17.0</td><td><strong>40.5</strong></td><td><span class="badge green">Good</span></td></tr>
-              <tr><td><strong>CST205: OOP Using Java</strong></td><td>14.5</td><td>15.0</td><td>20.0</td><td><strong>49.5</strong></td><td><span class="badge green">Top Marks</span></td></tr>
-              <tr><td><strong>EST200: Design &amp; Engg</strong></td><td>10.0</td><td>11.0</td><td>16.0</td><td><strong>37.0</strong></td><td><span class="badge amber">Needs Attention</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- RESULTS & SGPA -->
-      <section class="dash-section" id="results">
-        <div class="dash-grid-2">
-          <div class="panel">
-            <div class="panel-head"><h3>KTU 10-Point Grade Sheet (Provisional)</h3></div>
-            <table class="data-table">
-              <thead><tr><th>Course Code</th><th>Course</th><th>Grade</th><th>Points</th><th>Credits</th></tr></thead>
-              <tbody>
-                <tr><td>MAT203</td><td>Discrete Mathematical Structures</td><td><span class="badge green">A+</span></td><td>9.0</td><td>4</td></tr>
-                <tr><td>CST201</td><td>Data Structures</td><td><span class="badge green">A</span></td><td>8.5</td><td>4</td></tr>
-                <tr><td>CST203</td><td>Logic System Design</td><td><span class="badge green">B+</span></td><td>8.0</td><td>4</td></tr>
-                <tr><td>CST205</td><td>OOP Using Java</td><td><span class="badge green">S (Outstanding)</span></td><td>10.0</td><td>4</td></tr>
-                <tr><td>EST200</td><td>Design &amp; Engineering</td><td><span class="badge amber">B</span></td><td>7.0</td><td>2</td></tr>
-                <tr><td>MCN201</td><td>Sustainable Engineering</td><td><span class="badge green">Pass (P)</span></td><td>—</td><td>0 (Audit)</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:16px;">
-            <div class="stat-panel">
-              <div class="label">Calculated SGPA (Semester 3)</div>
-              <div class="value">8.85</div>
-              <div class="delta">Formula: Σ(Credits × Points) / Σ(Credits)</div>
+              <div class="label">Total Unpaid Balance &amp; Fines</div>
+              <div class="value" id="finesTotalDue">Rs. 0.00</div>
+              <div class="delta" id="finesDeltaMsg">Zero outstanding overdue penalties</div>
               <p style="font-size:0.8rem; color:var(--ink-soft); margin-top:8px;">
-                Earned Credits: <strong>18 / 18</strong> (Excluding audit). Eligible for B.Tech Honours degree track (SGPA &ge; 8.5).
+                Fine Rate: Rs. 5.00 / day overdue. Unsettled dues &gt; Rs. 50 automatically restrict court booking privileges and facility clearance.
               </p>
             </div>
-            <div class="stat-panel">
-              <div class="label">Cumulative CGPA</div>
-              <div class="value">8.72</div>
-              <div class="delta">Across S1, S2 and S3</div>
+
+            <div class="panel">
+              <div class="panel-head"><h3>Online Dues Settlement</h3></div>
+              <div class="panel-body">
+                <p style="font-size:0.84rem; color:var(--ink-soft); margin-bottom:12px;">
+                  Settle outstanding balance or pay an overdue penalty via the campus payment gateway bridge.
+                </p>
+                <div class="inline-form" style="margin-bottom:10px;">
+                  <input type="number" id="payFineAmount" placeholder="Amount (Rs.)" min="1" step="1" value="50" style="width:140px;">
+                  <button type="button" class="btn btn-primary btn-sm" id="payFineBtn">Settle Dues</button>
+                </div>
+                <small style="color:var(--ink-soft); font-size:0.75rem;">Processed securely through the campus financial controller service.</small>
+              </div>
             </div>
           </div>
         </div>
@@ -420,7 +311,7 @@
                 <div>• Standard loan period: <strong>14 days</strong></div>
                 <div>• Current books issued: <strong id="libIssuedCount">0</strong></div>
                 <div style="margin-top:12px;">
-                  <a href="classic-dashboard.html" class="btn btn-outline btn-sm">Manage Loans in Classic Console ↗</a>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="alert('Book loans follow a 14-day circulating cycle. Overdue charges: Rs. 5.00/day.')">Circulation Policy</button>
                 </div>
               </div>
             </div>
@@ -433,9 +324,9 @@
         <div class="panel">
           <div class="panel-head"><h3>Notifications &amp; Announcements</h3></div>
           <div class="panel-body">
-            <div class="notif-item"><div class="notif-dot" style="background:var(--red);"></div><div><p><strong style="color:var(--red);">EST200 Attendance Alert:</strong> Attendance is 72% — attend the next 2 classes to avoid exam condonation penalty.</p><div class="notif-time">Today, 9:30 AM</div></div></div>
-            <div class="notif-item"><div class="notif-dot"></div><div><p><strong>CST205 OOP Java Lab:</strong> Series Exam 2 CIE marks published (Scored 15/15).</p><div class="notif-time">Yesterday</div></div></div>
-            <div class="notif-item"><div class="notif-dot"></div><div><p><strong>Sports Council:</strong> Inter-collegiate Badminton and Football tournament slots open for booking.</p><div class="notif-time">2 days ago</div></div></div>
+            <div class="notif-item"><div class="notif-dot" style="background:var(--teal);"></div><div><p><strong>Facility Maintenance:</strong> Synthetic Tennis Court line-marking scheduled for Sunday 06:00 – 09:00 AM.</p><div class="notif-time">Today, 9:30 AM</div></div></div>
+            <div class="notif-item"><div class="notif-dot"></div><div><p><strong>Central Library:</strong> Extended reading room access active for evening hours until 22:00.</p><div class="notif-time">Yesterday</div></div></div>
+            <div class="notif-item"><div class="notif-dot"></div><div><p><strong>Sports Council:</strong> Inter-department Badminton and Football tournament slots open for booking.</p><div class="notif-time">2 days ago</div></div></div>
             <div class="notif-item"><div class="notif-dot"></div><div><p><strong>Hostel Office:</strong> Mess rebate applications for upcoming vacation must be submitted 48 hours prior.</p><div class="notif-time">3 days ago</div></div></div>
           </div>
         </div>
