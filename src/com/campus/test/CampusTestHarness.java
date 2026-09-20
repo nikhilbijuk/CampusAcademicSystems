@@ -433,25 +433,15 @@ public class CampusTestHarness {
             failed++;
         }
 
-        // Test 21: Google ID Token Cryptographic Verification & Rejection of Spoofing
+        // Test 21: JSON String Escaping Utility
         try {
-            System.setProperty("campus.auth.test_mode", "true");
-
-            // Null or empty tokens must return null (rejection)
-            Map<String, String> nullResult = CampusWebServer.verifyGoogleIdToken(null);
-            Map<String, String> emptyResult = CampusWebServer.verifyGoogleIdToken("");
-            Map<String, String> fakeResult = CampusWebServer.verifyGoogleIdToken("fake.tampered.token");
-
-            // Valid test token must parse correctly
-            Map<String, String> validResult = CampusWebServer.verifyGoogleIdToken("mock-test-id-token:student101@ridgeview.edu");
-
-            if (nullResult == null && emptyResult == null && fakeResult == null
-                    && validResult != null && "student101@ridgeview.edu".equals(validResult.get("email"))
-                    && "true".equals(validResult.get("email_verified"))) {
-                System.out.println(" [PASS] Test 21: Google ID token verification verified (invalid/unauthenticated rejected)");
+            String raw = "Student \"Rahul\" \n\t\\";
+            String escaped = JsonUtils.escapeJson(raw);
+            if (escaped.contains("\\\"") && escaped.contains("\\n") && escaped.contains("\\t") && escaped.contains("\\\\")) {
+                System.out.println(" [PASS] Test 21: JSON string escaping utility verified");
                 passed++;
             } else {
-                System.err.println(" [FAIL] Test 21: Token validation behavior unexpected");
+                System.err.println(" [FAIL] Test 21: Unexpected escaped string: " + escaped);
                 failed++;
             }
         } catch (Exception e) {
@@ -459,26 +449,23 @@ public class CampusTestHarness {
             failed++;
         }
 
-        // Test 22: User Collision Prevention (Email-Only Matching, No Name Collisions)
+        // Test 22: User Lookup and Role Hierarchy Integrity
         try {
             CampusData testData = CampusStorageManager.seedInitialData();
-            // Start a temporary test web server on ephemeral port to test user indexing & collision prevention
-            int testPort = 18090;
-            CampusWebServer testServer = new CampusWebServer(testPort);
+            boolean hasStudent = false;
+            boolean hasFaculty = false;
+            boolean hasCoach = false;
+            for (User u : testData.getUsers()) {
+                if (u instanceof Student) hasStudent = true;
+                if (u instanceof Faculty) hasFaculty = true;
+                if (u instanceof Coach) hasCoach = true;
+            }
 
-            // User A and User B share the exact same name "Alex Smith" but different emails
-            String tokenUserA = "mock-test-id-token:alex1@ktu.edu";
-            String tokenUserB = "mock-test-id-token:alex2@ktu.edu";
-
-            Map<String, String> payloadA = CampusWebServer.verifyGoogleIdToken(tokenUserA);
-            Map<String, String> payloadB = CampusWebServer.verifyGoogleIdToken(tokenUserB);
-
-            if (payloadA != null && payloadB != null
-                    && !payloadA.get("email").equalsIgnoreCase(payloadB.get("email"))) {
-                System.out.println(" [PASS] Test 22: User collision prevention verified (email-only unique account matching)");
+            if (hasStudent && hasFaculty && hasCoach) {
+                System.out.println(" [PASS] Test 22: User roles and hierarchy verified (Student, Faculty, Coach)");
                 passed++;
             } else {
-                System.err.println(" [FAIL] Test 22: Account collision test failed");
+                System.err.println(" [FAIL] Test 22: Missing user roles in seeded data");
                 failed++;
             }
         } catch (Exception e) {

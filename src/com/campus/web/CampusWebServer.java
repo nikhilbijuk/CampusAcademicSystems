@@ -77,7 +77,6 @@ public class CampusWebServer {
         server.createContext("/api/library/borrow", new ApiLibraryBorrowHandler());
         server.createContext("/api/library/return", new ApiLibraryReturnHandler());
         server.createContext("/api/academic", new ApiAcademicHandler());
-        server.createContext("/api/auth/google", new ApiGoogleAuthHandler());
         server.createContext("/api/save", new ApiSaveHandler());
 
         // Static Web UI Files
@@ -904,120 +903,6 @@ public class CampusWebServer {
         profile.recordGrade("MCN201", KtuGrade.P);
 
         return profile;
-    }
-
-    private class ApiGoogleAuthHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                sendResponse(exchange, 405, "{\"error\":\"Method Not Allowed\"}", "application/json");
-                return;
-            }
-
-            String body = readRequestBody(exchange);
-            Map<String, String> params = JsonUtils.parseFlatJson(body);
-            String idToken = params.get("idToken");
-
-            // Strict server-side verification: reject unauthenticated requests without valid idToken
-            if (idToken == null || idToken.trim().isEmpty()) {
-                sendResponse(exchange, 401, "{\"success\":false,\"error\":\"Google ID token is required for authentication. Unauthenticated requests are rejected.\"}", "application/json");
-                return;
-            }
-
-            Map<String, String> googlePayload = verifyGoogleIdToken(idToken.trim());
-            if (googlePayload == null) {
-                sendResponse(exchange, 401, "{\"success\":false,\"error\":\"Google token verification failed. The provided credential was invalid or expired.\"}", "application/json");
-                return;
-            }
-
-            // Exclusively extract verified identity claims from Google
-            String email = googlePayload.get("email");
-            String name = googlePayload.get("name");
-            String pictureUrl = googlePayload.get("picture");
-
-            if (email == null || email.trim().isEmpty()) {
-                sendResponse(exchange, 400, "{\"success\":false,\"error\":\"No verified email claim found in Google token.\"}", "application/json");
-                return;
-            }
-
-            String normEmail = email.trim().toLowerCase(Locale.ROOT);
-
-            // O(1) indexed user lookup by normalized email / identity (NO collision on display name)
-            User user = userEmailIndex.get(normEmail);
-            if (user == null && normEmail.contains("@")) {
-                user = userEmailIndex.get(normEmail.split("@")[0]);
-            }
-
-            if (user == null) {
-                synchronized (data) {
-                    user = userEmailIndex.get(normEmail);
-                    if (user == null) {
-                        String newId = "S" + (100 + data.getUsers().size() + 1);
-                        String displayName = (name != null && !name.trim().isEmpty()) ? name.trim() : email.trim();
-                        user = new Student(newId, displayName);
-                        data.getUsers().add(user);
-                        userEmailIndex.put(normEmail, user);
-                        userEmailIndex.put(newId.toLowerCase(Locale.ROOT), user);
-                    }
-                }
-            }
-
-            String json = "{"
-                + "\"success\":true,"
-                + "\"verifiedByGoogle\":true,"
-                + "\"userId\":\"" + JsonUtils.escapeJson(user.getUserId()) + "\","
-                + "\"name\":\"" + JsonUtils.escapeJson(user.getName()) + "\","
-                + "\"email\":\"" + JsonUtils.escapeJson(email) + "\","
-                + (pictureUrl != null ? "\"picture\":\"" + JsonUtils.escapeJson(pictureUrl) + "\"," : "")
-                + "\"role\":\"" + user.getClass().getSimpleName() + "\","
-                + "\"fineBalance\":" + user.getFineBalance()
-                + "}";
-
-            sendResponse(exchange, 200, json, "application/json");
-        }
-    }
-
-    public static Map<String, String> verifyGoogleIdToken(String idToken) {
-        if (idToken == null || idToken.trim().isEmpty()) {
-            return null;
-        }
-
-        // Test mode bypass for automated offline testing
-        if (Boolean.getBoolean("campus.auth.test_mode") && idToken.startsWith("mock-test-id-token:")) {
-            String testEmail = idToken.substring("mock-test-id-token:".length()).trim();
-            Map<String, String> mockPayload = new HashMap<>();
-            mockPayload.put("email", testEmail);
-            mockPayload.put("email_verified", "true");
-            mockPayload.put("iss", "accounts.google.com");
-            mockPayload.put("name", "Test " + (testEmail.contains("@") ? testEmail.split("@")[0] : testEmail));
-            return mockPayload;
-        }
-
-        try {
-            java.net.URL url = new java.net.URL("https://oauth2.googleapis.com/tokeninfo?id_token=" + java.net.URLEncoder.encode(idToken.trim(), "UTF-8"));
-            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(6000);
-            conn.setReadTimeout(6000);
-
-            int code = conn.getResponseCode();
-            if (code == 200) {
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
-                    Map<String, String> payload = JsonUtils.parseFlatJson(sb.toString());
-                    String iss = payload.get("iss");
-                    String emailVerified = payload.get("email_verified");
-                    if (iss != null && (iss.contains("accounts.google.com") || iss.contains("https://accounts.google.com")) && "true".equalsIgnoreCase(emailVerified)) {
-                        return payload;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Notice: Google Tokeninfo network verification unavailable: " + e.getMessage());
-        }
-        return null;
     }
 
     private static String getMimeType(String filename) {
