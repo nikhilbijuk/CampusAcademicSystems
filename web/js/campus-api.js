@@ -240,7 +240,7 @@
           <td>Rs. ${Number(hs.roomTariff).toFixed(2)}</td>
           <td>${hs.mealPlan}</td>
           <td>${hs.leavesThisMonth} days</td>
-          <td><a href="classic-dashboard.html" class="btn btn-ghost btn-sm">Manage in Viva Lab</a></td>
+          <td><a href="classic-dashboard.html" class="btn btn-ghost btn-sm">Manage in Classic Console</a></td>
         </tr>
       `).join('');
     }

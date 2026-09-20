@@ -105,7 +105,7 @@ CampusAcademicSystems/
 
 The project includes an event-driven desktop GUI built with **Java Swing** backed by a **SQLite JDBC database layer** using the **Singleton Design Pattern**:
 
-### 🖱️ Option 1: 1-Click Launch (Recommended for Viva)
+### 🖱️ Option 1: 1-Click Launch
 * **Windows File Explorer**: Double-click [`start-gui.bat`](start-gui.bat)
 * **PowerShell Terminal**: Run `.\start-gui.bat` *(Note the `.\` prefix required by PowerShell)*
 * **Command Prompt (CMD)**: Run `start-gui.bat`
@@ -223,7 +223,7 @@ javac -d bin $(find src -name "*.java")
 
 You can run the system in two distinct modes:
 
-#### Option A: Modern Web Dashboard (Recommended for Demonstrations & Viva)
+#### Option A: Modern Web Dashboard (Recommended for Demonstrations)
 Launches the embedded HTTP server and serves the responsive single-page web dashboard.
 
 * **Windows (PowerShell or CMD)**:
@@ -305,7 +305,7 @@ Executes the comprehensive 15-test verification harness covering OOP inheritance
 You can deploy the Campus Academic Management System to the public internet using three different methods:
 
 ### Method 1: Instant Client-Side Deployment (GitHub Pages — 100% Free)
-The frontend (`index.html` + `web/app.js`) features built-in fallback mock-state persistence. Anyone browsing the GitHub Pages site can test court bookings, hostel billing calculators, tab switching, and viva notes with zero server setup required.
+The frontend (`index.html` + `web/app.js`) features built-in fallback mock-state persistence. Anyone browsing the GitHub Pages site can test court bookings, hostel billing calculators, tab switching, and interactive features with zero server setup required.
 
 1. Navigate to your repository on GitHub: [`https://github.com/nikhilbijuk/CampusAcademicSystems`](https://github.com/nikhilbijuk/CampusAcademicSystems)
 2. Go to **Settings** > **Pages** (in the left sidebar).
@@ -328,7 +328,7 @@ The frontend (`index.html` + `web/app.js`) features built-in fallback mock-state
 | **OOP Domain Logic** | Real Java OOP classes (`Court`, `HostelStudent`, `Book`) | Client-side JavaScript fallback |
 | **REST APIs** | Live endpoints (`/api/data`, `/api/reserve`, `/api/save`) | N/A |
 | **Data Persistence** | Native Java Object Serialization (`data/campus_data.ser`) | Browser `localStorage` |
-| **Recommended For** | **Official KTU viva evaluation, teacher review, full-stack defense** | **Fast portfolio preview, backup mirror with zero downtime** |
+| **Recommended For** | **Official evaluation, teacher review, full-stack demonstration** | **Fast portfolio preview, backup mirror with zero downtime** |
 
 ---
 
@@ -355,8 +355,8 @@ Hosted on Cloudflare's global edge network across 300+ cities:
 
 ---
 
-### Method 4: Instant Live Viva Tunneling (Localtunnel / Ngrok)
-To demonstrate your locally running Java server to an external evaluator, viva examiner, or mobile phone over public Wi-Fi without cloud dependencies:
+### Method 4: Instant Live Tunneling (Localtunnel / Ngrok)
+To demonstrate your locally running Java server to an external evaluator or mobile phone over public Wi-Fi without cloud dependencies:
 
 1. Start your local Java Web Launcher:
    ```powershell

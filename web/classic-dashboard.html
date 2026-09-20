@@ -58,9 +58,6 @@
       <button class="nav-tab" data-tab="users">
         <span class="tab-icon">👥</span> Users & Quotas
       </button>
-      <button class="nav-tab" data-tab="viva">
-        <span class="tab-icon">💡</span> Viva & Architecture
-      </button>
     </nav>
   </header>
 
@@ -197,58 +194,6 @@
 
       <div id="usersGrid" class="users-grid">
         <!-- Rendered via JS -->
-      </div>
-    </section>
-
-    <!-- TAB 4: VIVA & ARCHITECTURE REFERENCE -->
-    <section id="tab-viva" class="tab-pane">
-      <div class="section-header">
-        <div>
-          <h2 class="section-title">KTU Mini Project Viva & Architecture Guide</h2>
-          <p class="section-desc">Quick cheat sheet explaining how Java OOP concepts are implemented across this codebase.</p>
-        </div>
-      </div>
-
-      <div class="viva-grid">
-        <div class="viva-card">
-          <div class="viva-badge">Polymorphism</div>
-          <h3 class="viva-title">Dynamic Tariff & Meal Costs</h3>
-          <p class="viva-text">
-            <code>BaseRoom</code> and <code>MealPlan</code> are abstract classes. 
-            <code>ACSuite</code> and <code>SingleOccupancy</code> override <code>calculateMonthlyTariff()</code>, 
-            while <code>StandardPlan</code> and <code>SpecialDietPlan</code> override <code>calculateMealCost()</code>. 
-            The billing routine calls them polymorphically at runtime.
-          </p>
-        </div>
-
-        <div class="viva-card">
-          <div class="viva-badge">Inheritance</div>
-          <h3 class="viva-title">Role-Based Quotas</h3>
-          <p class="viva-text">
-            <code>User</code> is the superclass. <code>Student</code> (quota 2), <code>Faculty</code> (quota 5), and <code>Coach</code> (quota 10) 
-            extend <code>User</code> and provide their own limit via overridden <code>getBookingLimit()</code>.
-          </p>
-        </div>
-
-        <div class="viva-card">
-          <div class="viva-badge">Custom Exceptions</div>
-          <h3 class="viva-title">Business Rule Integrity</h3>
-          <p class="viva-text">
-            Enforces invariants: <code>SlotAlreadyBookedException</code> prevents double bookings, 
-            <code>OutstandingFineException</code> freezes bookings, <code>BookingQuotaExceededException</code> caps reservations, 
-            and <code>InvalidLeaveDaysException</code> rejects negative or month-exceeding days.
-          </p>
-        </div>
-
-        <div class="viva-card">
-          <div class="viva-badge">Persistence</div>
-          <h3 class="viva-title">Native Java Object Serialization</h3>
-          <p class="viva-text">
-            All models implement <code>Serializable</code>. <code>CampusStorageManager</code> uses 
-            <code>ObjectOutputStream</code> and <code>ObjectInputStream</code> to automatically persist and reload full state 
-            to/from <code>data/campus_data.ser</code>.
-          </p>
-        </div>
       </div>
     </section>
   </main>

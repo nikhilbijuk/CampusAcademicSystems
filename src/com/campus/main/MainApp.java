@@ -287,7 +287,7 @@ public class MainApp {
                     } else {
                         System.err.println("Warning: Failed to save state.");
                     }
-                    System.out.println("Exiting System. Good luck with the KTU Viva!");
+                    System.out.println("Exiting Campus Academic Management System. Goodbye!");
                     running = false;
                     break;
                 }
