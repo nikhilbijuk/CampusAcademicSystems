@@ -49,13 +49,19 @@ public class CampusWebServer {
             for (User u : data.getUsers()) {
                 if ("S101".equalsIgnoreCase(u.getUserId())) {
                     userEmailIndex.put("rahul.s101@campus.edu", u);
+                    userEmailIndex.put("s101@adishankara.ac.in", u);
+                    userEmailIndex.put("rahul@adishankara.ac.in", u);
                     userEmailIndex.put("s101@ridgeview.edu", u);
                     userEmailIndex.put("rahul@ridgeview.edu", u);
                 } else if ("S102".equalsIgnoreCase(u.getUserId())) {
                     userEmailIndex.put("priya.s102@campus.edu", u);
+                    userEmailIndex.put("s102@adishankara.ac.in", u);
+                    userEmailIndex.put("priya@adishankara.ac.in", u);
                     userEmailIndex.put("s102@ridgeview.edu", u);
                     userEmailIndex.put("priya@ridgeview.edu", u);
                 } else if ("F201".equalsIgnoreCase(u.getUserId())) {
+                    userEmailIndex.put("admin@adishankara.ac.in", u);
+                    userEmailIndex.put("faculty@adishankara.ac.in", u);
                     userEmailIndex.put("admin@ridgeview.edu", u);
                     userEmailIndex.put("faculty@ridgeview.edu", u);
                 }

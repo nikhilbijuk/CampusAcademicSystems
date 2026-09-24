@@ -6,19 +6,19 @@
 const KNOWN_USERS = {
   student: [
     {
-      ids: ['s101', 's101@ridgeview.edu', 'rahul@ridgeview.edu'],
+      ids: ['s101', 's101@adishankara.ac.in', 'rahul@adishankara.ac.in', 's101@ridgeview.edu', 'rahul@ridgeview.edu'],
       password: 'student123',
-      profile: { name: 'Rahul Sharma', id: 'S101', course: 'B.Tech Computer Science & Engg (KTU)', year: '2nd Year · Semester 3', email: 'rahul.s101@campus.edu', advisor: 'Dr. Joseph Kurian' }
+      profile: { name: 'Rahul Sharma', id: 'S101', course: 'B.Tech Computer Science & Engg (KTU)', year: '2nd Year · Semester 3', email: 'rahul.s101@adishankara.ac.in', advisor: 'Dr. Joseph Kurian' }
     },
     {
-      ids: ['s102', 's102@ridgeview.edu', 'priya@ridgeview.edu'],
+      ids: ['s102', 's102@adishankara.ac.in', 'priya@adishankara.ac.in', 's102@ridgeview.edu', 'priya@ridgeview.edu'],
       password: 'student123',
-      profile: { name: 'Priya Nair', id: 'S102', course: 'B.Tech Computer Science & Engg (KTU)', year: '2nd Year · Semester 3', email: 'priya.s102@campus.edu', advisor: 'Dr. Joseph Kurian' }
+      profile: { name: 'Priya Nair', id: 'S102', course: 'B.Tech Computer Science & Engg (KTU)', year: '2nd Year · Semester 3', email: 'priya.s102@adishankara.ac.in', advisor: 'Dr. Joseph Kurian' }
     },
     {
-      ids: ['student@ridgeview.edu', 'rv2023cs041', 'aditi@ridgeview.edu'],
+      ids: ['student@adishankara.ac.in', 'aditi@adishankara.ac.in', 'student@ridgeview.edu', 'asi2023cs041', 'aditi@ridgeview.edu'],
       password: 'student123',
-      profile: { name: 'Aditi Menon', id: 'RV2023CS041', course: 'B.Tech Computer Science', year: '3rd Year · Semester 5', email: 'student@ridgeview.edu', advisor: 'Dr. Leena Fernandes' }
+      profile: { name: 'Aditi Menon', id: 'ASI2023CS041', course: 'B.Tech Computer Science', year: '3rd Year · Semester 5', email: 'student@adishankara.ac.in', advisor: 'Dr. Leena Fernandes' }
     },
     {
       ids: ['dev.nikhilbiju@gmail.com', 'nikhil@gmail.com', 'nikhil'],
@@ -28,9 +28,9 @@ const KNOWN_USERS = {
   ],
   admin: [
     {
-      ids: ['admin@ridgeview.edu', 'adm-014', 'admin', 'admin123'],
+      ids: ['admin@adishankara.ac.in', 'admin@ridgeview.edu', 'adm-014', 'admin', 'admin123'],
       password: 'admin123',
-      profile: { name: 'Rahul Verma', id: 'ADM-014', role: 'Academic Administrator', email: 'admin@ridgeview.edu' }
+      profile: { name: 'Rahul Verma', id: 'ADM-014', role: 'Campus Administrator', email: 'admin@adishankara.ac.in' }
     },
     {
       ids: ['sysadmin', 'root'],
