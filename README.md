@@ -1,10 +1,8 @@
 # Campus Academic Management System (KTU Mini Project Framework)
 
-> 🚀 **Live Deployments**:
-> * 💻 **Primary Full-Stack Deployment (Live Java Backend on Replit)**: [https://campus-academic-systems--devnikhilbiju.replit.app](https://campus-academic-systems--devnikhilbiju.replit.app)  
+> 🚀 **Live Deployment**:
+> * 💻 **Full-Stack Cloud Deployment (Live Java Backend on Replit)**: [https://campus-academic-systems--devnikhilbiju.replit.app](https://campus-academic-systems--devnikhilbiju.replit.app)  
 >   *(Powered by OpenJDK 17 on Replit Cloud, live REST APIs `/api/*`, pure OOP domain logic, and real-time state persistence)*
-> * ⚡ **High-Availability Static Mirror (Cloudflare Edge)**: [https://campus-systems.dev-nikhilbiju.workers.dev](https://campus-systems.dev-nikhilbiju.workers.dev)  
->   *(Zero-downtime client-side mirror hosted on Cloudflare's global edge network with unlimited bandwidth)*
 
 A modular, Object-Oriented Java framework for managing sports facility reservations, user quotas, leave tracking, and hostel mess billing. Designed to adhere to APJ Abdul Kalam Technological University (KTU) academic project standards.
 
@@ -318,20 +316,6 @@ The frontend (`index.html` + `web/app.js`) features built-in fallback mock-state
    https://nikhilbijuk.github.io/CampusAcademicSystems/
    ```
 
-### ⚖️ Live Deployments Comparison: Which URL to Use?
-
-| Feature | 💻 **Replit URL** (Primary Full-Stack) | ⚡ **Cloudflare URL** (High-Availability Mirror) |
-| :--- | :--- | :--- |
-| **Live Address** | [https://campus-academic-systems--devnikhilbiju.replit.app](https://campus-academic-systems--devnikhilbiju.replit.app) | [https://campus-systems.dev-nikhilbiju.workers.dev](https://campus-systems.dev-nikhilbiju.workers.dev) |
-| **Runtime Environment** | **Real Cloud JVM (OpenJDK 17 on Replit)** | Cloudflare Global Edge Network |
-| **Backend Engine** | Pure Java HTTP Server (`com.sun.net.httpserver.HttpServer`) | Static Edge Engine |
-| **OOP Domain Logic** | Real Java OOP classes (`Court`, `HostelStudent`, `Book`) | Client-side JavaScript fallback |
-| **REST APIs** | Live endpoints (`/api/data`, `/api/reserve`, `/api/save`) | N/A |
-| **Data Persistence** | Native Java Object Serialization (`data/campus_data.ser`) | Browser `localStorage` |
-| **Recommended For** | **Official evaluation, teacher review, full-stack demonstration** | **Fast portfolio preview, backup mirror with zero downtime** |
-
----
-
 ### Method 2: Replit Cloud Deployment (Primary Java Backend)
 The project is pre-configured with [`.replit`](.replit) and [`replit.nix`](replit.nix) to compile and run natively on OpenJDK 17.
 
@@ -344,18 +328,7 @@ The project is pre-configured with [`.replit`](.replit) and [`replit.nix`](repli
 
 ---
 
-### Method 3: Cloudflare Edge Deployment (High-Availability Mirror)
-Hosted on Cloudflare's global edge network across 300+ cities:
-
-* **Live URL**: [https://campus-systems.dev-nikhilbiju.workers.dev](https://campus-systems.dev-nikhilbiju.workers.dev)
-* **Key Benefits**:
-  * 100% Free with unlimited bandwidth.
-  * Zero cold-start latency.
-  * Works as a reliable backup during presentations.
-
----
-
-### Method 4: Instant Live Tunneling (Localtunnel / Ngrok)
+### Method 3: Instant Live Tunneling (Localtunnel / Ngrok)
 To demonstrate your locally running Java server to an external evaluator or mobile phone over public Wi-Fi without cloud dependencies:
 
 1. Start your local Java Web Launcher:
