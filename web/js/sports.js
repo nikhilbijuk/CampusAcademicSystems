@@ -674,7 +674,227 @@ window.autofillSquad = autofillSquad;
 window.updateRequirementBadge = updateRequirementBadge;
 window.updateModifyReqBadge = updateModifyReqBadge;
 
+function getFacilityIcon(courtId) {
+  if (courtId === 'CRT1') return '🏸';
+  if (courtId === 'CRT2') return '🎾';
+  if (courtId === 'CRT3') return '🏀';
+  if (courtId === 'CRT4') return '⚽';
+  if (courtId === 'CRT5') return '🏏';
+  return '🏟️';
+}
+
+function openAdminBookingModal() {
+  const modal = document.getElementById('adminBookingModal');
+  if (modal) {
+    const err = document.getElementById('abmErrorAlert');
+    if (err) err.style.display = 'none';
+    modal.classList.remove('hidden');
+  }
+}
+
+function closeAdminBookingModal() {
+  const modal = document.getElementById('adminBookingModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+window.openAdminBookingModal = openAdminBookingModal;
+window.closeAdminBookingModal = closeAdminBookingModal;
+
+async function initFacilitiesAdmin() {
+  const tbody = document.getElementById('allReservationsBody');
+  if (!tbody) return; // Not on admin page
+
+  const toastEl = document.getElementById('bookingToast');
+  function showToast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toastEl.classList.remove('show'), 2800);
+  }
+
+  async function fetchAndRenderAdminBookings() {
+    tbody.innerHTML = `<tr><td colspan="5" style="color:var(--ink-soft); text-align:center; padding:16px;">Syncing reservations from Java server…</td></tr>`;
+
+    let reservations = [];
+
+    // 1. Fetch live server data
+    try {
+      const res = await fetch('/api/data');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.courts) {
+          data.courts.forEach(court => {
+            const cId = court.courtId;
+            const cType = court.courtType;
+            if (court.reservations) {
+              Object.entries(court.reservations).forEach(([slot, info]) => {
+                reservations.push({
+                  courtId: cId,
+                  courtName: `${getFacilityIcon(cId)} ${cType} (${cId})`,
+                  date: 'Today',
+                  slot: slot,
+                  userId: info.userId || 'Student',
+                  userName: info.name || 'Reserved',
+                  format: info.format || 'Standard',
+                  players: info.players || []
+                });
+              });
+            }
+          });
+        }
+      }
+    } catch(e) {}
+
+    // 2. Merge local demo bookings if not already present
+    const localBookings = loadBookings();
+    Object.values(localBookings).forEach(b => {
+      const cId = COURT_MAPPING[b.facility] || 'CRT1';
+      const f = FACILITIES.find(x => x.id === b.facility) || { name: b.facility, ic: '🏟️' };
+      const slotStr = b.slotStr || `${b.time}-${String(parseInt(b.time, 10)+1).padStart(2, '0')}:00`;
+      if (!reservations.some(r => r.courtId === cId && r.slot === slotStr)) {
+        reservations.push({
+          courtId: cId,
+          courtName: `${f.ic} ${f.name} (${cId})`,
+          date: b.date || 'Today',
+          slot: slotStr,
+          userId: b.userId || 'S101',
+          userName: b.userName || 'Rahul Sharma',
+          format: b.format || 'Standard',
+          players: b.players || []
+        });
+      }
+    });
+
+    if (reservations.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center; color:var(--ink-soft); padding:20px;">
+            No active reservations at the moment. All courts and turf facilities are currently free.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = reservations.map(r => {
+      const count = r.players ? r.players.length : 1;
+      const badge = r.format ? `<span class="badge blue" style="font-size:.7rem; margin-left:6px;">${r.format} (${count}p)</span>` : '';
+      return `<tr>
+        <td><strong>${r.courtName}</strong></td>
+        <td>${r.date}</td>
+        <td><strong>${r.slot}</strong></td>
+        <td>${r.userName} (${r.userId}) ${badge}</td>
+        <td>
+          <button type="button" class="btn btn-outline btn-sm" style="color:var(--red); border-color:#fca5a5;"
+                  data-admin-release-court="${r.courtId}" data-admin-release-slot="${r.slot}">
+            Cancel (Override)
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    tbody.querySelectorAll('[data-admin-release-court]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const cId = btn.getAttribute('data-admin-release-court');
+        const slot = btn.getAttribute('data-admin-release-slot');
+
+        try {
+          await fetch('/api/release', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ courtId: cId, slot: slot, userId: 'admin' })
+          });
+        } catch(e) {}
+
+        const bks = loadBookings();
+        Object.keys(bks).forEach(k => {
+          if ((COURT_MAPPING[bks[k].facility] === cId || bks[k].courtId === cId) &&
+              (bks[k].slotStr === slot || bks[k].time === slot.split('-')[0])) {
+            delete bks[k];
+          }
+        });
+        saveBookings(bks);
+
+        showToast(`Slot '${slot}' on ${cId} released by Admin Override.`);
+        fetchAndRenderAdminBookings();
+      });
+    });
+  }
+
+  // Refresh button
+  const refreshBtn = document.getElementById('refreshAdminBookingsBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', fetchAndRenderAdminBookings);
+  }
+
+  // Admin Book Court button
+  const bookBtn = document.getElementById('adminBookCourtBtn');
+  if (bookBtn) {
+    bookBtn.addEventListener('click', openAdminBookingModal);
+  }
+
+  // Autofill button in admin modal
+  const abmAutofillBtn = document.getElementById('abmAutofillBtn');
+  if (abmAutofillBtn) {
+    abmAutofillBtn.addEventListener('click', () => {
+      const fmt = document.getElementById('abmFormatSelect').value;
+      let count = 2;
+      if (fmt.includes('22') || fmt.includes('11')) count = 22;
+      else if (fmt.includes('14') || fmt.includes('7')) count = 14;
+      else if (fmt.includes('4')) count = 4;
+      else if (fmt.includes('10')) count = 10;
+      else if (fmt.includes('6')) count = 6;
+
+      const squad = ['F201 (Coach Vikram)'];
+      for (let i = 2; i <= count; i++) squad.push(`S10${i > 9 ? i : '0' + i}`);
+      document.getElementById('abmPlayerInput').value = squad.join(', ');
+    });
+  }
+
+  // Confirm booking in admin modal
+  const abmConfirmBtn = document.getElementById('abmConfirmBtn');
+  if (abmConfirmBtn) {
+    abmConfirmBtn.addEventListener('click', async () => {
+      const courtId = document.getElementById('abmCourtSelect').value;
+      const slot = document.getElementById('abmSlotSelect').value;
+      const format = document.getElementById('abmFormatSelect').value;
+      const rawPlayers = document.getElementById('abmPlayerInput').value;
+      const players = rawPlayers.split(',').map(s => s.trim()).filter(s => s.length > 0);
+      const errEl = document.getElementById('abmErrorAlert');
+
+      try {
+        const res = await fetch('/api/reserve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            courtId: courtId,
+            slot: slot,
+            userId: 'F201',
+            format: format,
+            players: players.length > 0 ? players.join(',') : 'F201,Player_2'
+          })
+        });
+        const data = await res.json();
+        if (!data.success && data.error) {
+          errEl.textContent = data.error;
+          errEl.style.display = 'block';
+          return;
+        }
+      } catch(e) {}
+
+      closeAdminBookingModal();
+      showToast(`Reserved ${slot} on ${courtId} (Admin Override).`);
+      fetchAndRenderAdminBookings();
+    });
+  }
+
+  fetchAndRenderAdminBookings();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initSportsBooking();
+  initFacilitiesAdmin();
 });
+
 

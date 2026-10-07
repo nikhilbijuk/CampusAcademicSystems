@@ -195,6 +195,7 @@
               <tr><td><strong>CRT2</strong></td><td>🎾 Tennis Court</td><td>East Sports Complex</td><td>Outdoor · Clay Court</td><td>06:00 – 21:00</td><td><span class="badge green">Operational</span></td></tr>
               <tr><td><strong>CRT3</strong></td><td>🏀 Basketball Court A</td><td>North Sports Block</td><td>Outdoor · Hard Court</td><td>06:00 – 21:00</td><td><span class="badge green">Operational</span></td></tr>
               <tr><td><strong>CRT4</strong></td><td>⚽ Football Turf</td><td>Main University Ground</td><td>Outdoor · Synthetic Turf</td><td>06:00 – 21:00</td><td><span class="badge green">Operational</span></td></tr>
+              <tr><td><strong>CRT5</strong></td><td>🏏 Cricket Ground</td><td>South Sports Arena</td><td>Outdoor · Turf Pitch</td><td>06:00 – 21:00</td><td><span class="badge green">Operational</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -202,7 +203,10 @@
         <div class="panel">
           <div class="panel-head">
             <h3>Active Slot Reservations (All Students &amp; Faculty)</h3>
-            <button type="button" class="btn btn-outline btn-sm" id="refreshAdminBookingsBtn">Refresh Bookings</button>
+            <div style="display:flex; gap:10px;">
+              <button type="button" class="btn btn-primary btn-sm" id="adminBookCourtBtn">+ Book Court as Admin</button>
+              <button type="button" class="btn btn-outline btn-sm" id="refreshAdminBookingsBtn">Refresh Bookings</button>
+            </div>
           </div>
           <table class="data-table">
             <thead><tr><th>Facility</th><th>Date</th><th>Time Slot</th><th>Reserved By</th><th>Action</th></tr></thead>
@@ -302,7 +306,72 @@
 
     </div>
   </div>
+<!-- Admin Court Reservation Modal -->
+<div class="modal-backdrop hidden" id="adminBookingModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">Admin Facility Reservation Override</div>
+      <button type="button" class="modal-close" onclick="closeAdminBookingModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.82rem; color:var(--ink-soft); margin-bottom:14px;">
+        As an Administrator, you can reserve courts for university tournaments, coaching sessions, or student teams.
+      </p>
+
+      <div style="margin-bottom:12px;">
+        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:6px;">Select Facility</label>
+        <select id="abmCourtSelect" style="width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:6px; background:var(--panel);">
+          <option value="CRT4">⚽ Football Turf (CRT4)</option>
+          <option value="CRT5">🏏 Cricket Ground (CRT5)</option>
+          <option value="CRT1">🏸 Badminton Court (CRT1)</option>
+          <option value="CRT2">🎾 Tennis Court (CRT2)</option>
+          <option value="CRT3">🏀 Basketball Court A (CRT3)</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:6px;">Select Time Slot</label>
+        <select id="abmSlotSelect" style="width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:6px; background:var(--panel);">
+          <option value="06:00-07:00">06:00 – 07:00 (Early Morning Practice)</option>
+          <option value="07:00-08:00">07:00 – 08:00</option>
+          <option value="08:00-09:00">08:00 – 09:00</option>
+          <option value="16:00-17:00" selected>16:00 – 17:00 (Evening Prime Slot)</option>
+          <option value="17:00-18:00">17:00 – 18:00</option>
+          <option value="18:00-19:00">18:00 – 19:00</option>
+          <option value="19:00-20:00">19:00 – 20:00</option>
+          <option value="20:00-21:00">20:00 – 21:00</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:6px;">Match Format / Purpose</label>
+        <select id="abmFormatSelect" style="width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:6px; background:var(--panel);">
+          <option value="11 vs 11 Match">11 vs 11 Match (22 Players Required)</option>
+          <option value="7 vs 7 Turf Match">7 vs 7 Turf Match (14 Players Required)</option>
+          <option value="Tournament / Practice">University Tournament / Practice</option>
+          <option value="Singles (1 vs 1)">Singles (1 vs 1 - 2 Players)</option>
+          <option value="Doubles (2 vs 2)">Doubles (2 vs 2 - 4 Players)</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <label style="font-size:0.8rem; font-weight:600;">Participating Student Roll Numbers / Squad</label>
+          <button type="button" class="btn btn-outline btn-sm" id="abmAutofillBtn" style="font-size:0.75rem; padding:3px 8px;">⚡ Auto-Fill Full Squad</button>
+        </div>
+        <textarea id="abmPlayerInput" rows="3" style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size:0.85rem; font-family:monospace;" placeholder="e.g. S101, S102, S103..."></textarea>
+      </div>
+
+      <div id="abmErrorAlert" style="display:none; padding:10px; border-radius:6px; background:#fee2e2; color:#b91c1c; font-size:0.82rem; margin-top:10px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" onclick="closeAdminBookingModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" id="abmConfirmBtn">Confirm Admin Reservation</button>
+    </div>
+  </div>
 </div>
+
+<div class="booking-toast" id="bookingToast"></div>
 
 <script src="js/dashboard.js" defer></script>
 <script src="js/sports.js" defer></script>
