@@ -98,8 +98,6 @@ function getSlotState(facilityId, dKey, time, isToday, currentHour) {
   const key = slotKey(facilityId, dKey, time);
   if (bookings[key]) return bookings[key].by === 'you' ? 'booked-you' : 'booked-other';
 
-  if (isToday && parseInt(time, 10) <= currentHour) return 'past';
-
   const hash = seedHash(key);
   if (hash % 6 === 0) return 'booked-other'; // realistic occupancy
   return 'free';
@@ -332,8 +330,7 @@ function initSportsBooking() {
     slotGridEl.innerHTML = SLOT_TIMES.map(time => {
       const state = getSlotState(activeFacility, activeDate, time, isToday, currentHour);
       const endHour = String(parseInt(time, 10) + 1).padStart(2, '0');
-      const disabled = state === 'booked-other' || state === 'past';
-      return `<button type="button" class="slot-btn ${state}" data-time="${time}" ${disabled ? 'disabled' : ''}>
+      return `<button type="button" class="slot-btn ${state}" data-time="${time}">
         ${time}–${endHour}:00
       </button>`;
     }).join('');
@@ -350,7 +347,14 @@ function initSportsBooking() {
     if (bookings[key] && bookings[key].by === 'you') {
       // Clicked on own booked slot -> open modify modal
       openModifyBookingModal(bookings[key]);
+    } else if (bookings[key] && bookings[key].by !== 'you') {
+      showToast(`Slot ${time} is already booked by another student.`);
     } else {
+      const hash = seedHash(key);
+      if (hash % 6 === 0) {
+        showToast(`Slot ${time} is already occupied by campus teams.`);
+        return;
+      }
       // Empty slot -> open team booking modal
       openTeamBookingModal(activeFacility, activeDate, time);
     }
@@ -661,6 +665,16 @@ function initSportsBooking() {
   renderMyBookings();
 }
 
+window.openTeamBookingModal = openTeamBookingModal;
+window.closeTeamBookingModal = closeTeamBookingModal;
+window.openModifyBookingModal = openModifyBookingModal;
+window.closeModifyBookingModal = closeModifyBookingModal;
+window.switchModifyTab = switchModifyTab;
+window.autofillSquad = autofillSquad;
+window.updateRequirementBadge = updateRequirementBadge;
+window.updateModifyReqBadge = updateModifyReqBadge;
+
 document.addEventListener('DOMContentLoaded', () => {
   initSportsBooking();
 });
+
