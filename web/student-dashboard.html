@@ -336,6 +336,97 @@
   </div>
 </div>
 
+<!-- Team Match Booking Modal -->
+<div class="modal-backdrop hidden" id="teamBookingModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="tbmTitle">Reserve Court with Team</div>
+      <button type="button" class="modal-close" onclick="closeTeamBookingModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="tbmFacilityBadge" style="margin-bottom:12px; font-weight:600; font-size:0.95rem; color:var(--navy);"></div>
+      <p style="font-size:0.82rem; color:var(--ink-soft); margin-bottom:16px;">
+        Campus regulations require team sport reservations to register the required number of participants (e.g. 11+11 for Football/Cricket, 2 or 4 for Badminton).
+      </p>
+      
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:6px;">Match Format</label>
+        <select id="tbmFormatSelect" style="width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:6px; background:var(--panel);">
+        </select>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <label style="font-size:0.8rem; font-weight:600;">Participating Student IDs / Roster</label>
+          <span id="tbmRequirementBadge" class="badge amber" style="font-size:0.75rem;"></span>
+        </div>
+        <textarea id="tbmPlayerInput" rows="3" style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size:0.85rem; font-family:monospace;" placeholder="Comma-separated student IDs (e.g. S101, S102, S103...)"></textarea>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+          <span style="font-size:0.75rem; color:var(--ink-soft);">Captain: <strong id="tbmCaptainDisplay">S101 (Rahul)</strong></span>
+          <button type="button" class="btn btn-outline btn-sm" id="tbmAutofillBtn" style="font-size:0.75rem; padding:3px 8px;">⚡ Auto-Fill Full Squad</button>
+        </div>
+      </div>
+      <div id="tbmErrorAlert" style="display:none; padding:10px; border-radius:6px; background:#fee2e2; color:#b91c1c; font-size:0.82rem; margin-top:10px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" onclick="closeTeamBookingModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" id="tbmConfirmBtn">Confirm Reservation</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modify Booking Modal -->
+<div class="modal-backdrop hidden" id="modifyBookingModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="mbmTitle">Modify Court Reservation</div>
+      <button type="button" class="modal-close" onclick="closeModifyBookingModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="mbmCurrentDetails" style="padding:12px; border-radius:6px; background:var(--paper); border:1px solid var(--line); margin-bottom:16px; font-size:0.85rem;"></div>
+
+      <div style="display:flex; gap:8px; margin-bottom:16px;">
+        <button type="button" class="btn btn-sm btn-primary" id="mbmTabRescheduleBtn" onclick="switchModifyTab('reschedule')">Reschedule Time Slot</button>
+        <button type="button" class="btn btn-sm btn-outline" id="mbmTabRosterBtn" onclick="switchModifyTab('roster')">Edit Team &amp; Format</button>
+      </div>
+
+      <!-- Reschedule Section -->
+      <div id="mbmRescheduleSection">
+        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:6px;">Select New Time Slot</label>
+        <select id="mbmNewSlotSelect" style="width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:6px; background:var(--panel); margin-bottom:12px;">
+        </select>
+        <button type="button" class="btn btn-primary" id="mbmConfirmRescheduleBtn" style="width:100%;">Reschedule Booking</button>
+      </div>
+
+      <!-- Roster Section -->
+      <div id="mbmRosterSection" style="display:none;">
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:6px;">Update Match Format</label>
+          <select id="mbmFormatSelect" style="width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:6px; background:var(--panel);">
+          </select>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label style="font-size:0.8rem; font-weight:600;">Updated Roster (Comma-separated)</label>
+            <span id="mbmReqBadge" class="badge amber" style="font-size:0.75rem;"></span>
+          </div>
+          <textarea id="mbmPlayerInput" rows="3" style="width:100%; padding:10px; border:1px solid var(--line); border-radius:6px; font-size:0.85rem; font-family:monospace;"></textarea>
+          <div style="text-align:right; margin-top:4px;">
+            <button type="button" class="btn btn-outline btn-sm" id="mbmAutofillBtn" style="font-size:0.75rem; padding:3px 8px;">⚡ Auto-Fill Required Squad</button>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary" id="mbmConfirmRosterBtn" style="width:100%;">Save Roster Changes</button>
+      </div>
+
+      <div id="mbmErrorAlert" style="display:none; padding:10px; border-radius:6px; background:#fee2e2; color:#b91c1c; font-size:0.82rem; margin-top:12px;"></div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between;">
+      <button type="button" class="btn btn-outline" style="color:var(--red); border-color:#fca5a5;" id="mbmDeleteBookingBtn">Cancel / Delete Booking</button>
+      <button type="button" class="btn btn-outline" onclick="closeModifyBookingModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="booking-toast" id="bookingToast"></div>
 
 <script src="js/dashboard.js" defer></script>

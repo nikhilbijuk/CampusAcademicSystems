@@ -76,6 +76,7 @@ public class CampusWebServer {
         server.createContext("/api/data", new ApiDataHandler());
         server.createContext("/api/reserve", new ApiReserveHandler());
         server.createContext("/api/release", new ApiReleaseHandler());
+        server.createContext("/api/modify", new ApiModifyHandler());
         server.createContext("/api/fine", new ApiFineHandler());
         server.createContext("/api/hostel/register", new ApiHostelRegisterHandler());
         server.createContext("/api/hostel/leave", new ApiHostelLeaveHandler());
@@ -158,6 +159,17 @@ public class CampusWebServer {
                         } else {
                             json.append("\"userId\":null,\"name\":\"Reserved\"");
                         }
+                        CourtBooking cb = c.getBooking(entry.getKey());
+                        if (cb != null) {
+                            json.append(",\"format\":\"").append(JsonUtils.escapeJson(cb.getMatchFormat())).append("\",")
+                                .append("\"players\":[");
+                            List<String> plist = cb.getPlayerRoster();
+                            for (int pi = 0; pi < plist.size(); pi++) {
+                                if (pi > 0) json.append(",");
+                                json.append("\"").append(JsonUtils.escapeJson(plist.get(pi))).append("\"");
+                            }
+                            json.append("]");
+                        }
                         json.append("}");
                     }
                     json.append("}}");
@@ -224,7 +236,12 @@ public class CampusWebServer {
 
             String courtId = params.get("courtId");
             String slot = params.get("slot");
+            if (slot == null) slot = params.get("slotTime");
             String userId = params.get("userId");
+            String format = params.get("format");
+            if (format == null) format = params.get("matchFormat");
+            String playersStr = params.get("players");
+            if (playersStr == null) playersStr = params.get("playerRoster");
 
             if (courtId == null || slot == null || userId == null) {
                 sendResponse(exchange, 400, "{\"success\":false,\"error\":\"courtId, slot, and userId are required\"}", "application/json");
@@ -257,15 +274,29 @@ public class CampusWebServer {
                     return;
                 }
 
+                List<String> playerList = new ArrayList<>();
+                if (playersStr != null && !playersStr.trim().isEmpty()) {
+                    for (String p : playersStr.split(",")) {
+                        if (!p.trim().isEmpty()) playerList.add(p.trim());
+                    }
+                }
+                if (playerList.isEmpty() && (format == null || format.isEmpty() || "Standard".equalsIgnoreCase(format))) {
+                    int req = Court.getRequiredPlayers(targetCourt.getCourtType(), "Standard");
+                    playerList.add(targetUser.getUserId());
+                    for (int i = 2; i <= req; i++) playerList.add("Player_" + i);
+                }
+
                 try {
-                    targetCourt.reserve(slot, targetUser, data.getCourts());
-                    sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Slot '" + slot + "' reserved successfully for " + targetUser.getName() + "\"}", "application/json");
+                    targetCourt.reserve(slot, targetUser, format, playerList, data.getCourts());
+                    sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Slot '" + slot + "' reserved successfully for " + targetUser.getName() + " (" + (format != null ? format : "Standard") + " - " + playerList.size() + " players)\"}", "application/json");
                 } catch (SlotAlreadyBookedException e) {
                     sendResponse(exchange, 409, "{\"success\":false,\"error\":\"" + JsonUtils.escapeJson(e.getMessage()) + "\"}", "application/json");
                 } catch (OutstandingFineException e) {
                     sendResponse(exchange, 403, "{\"success\":false,\"error\":\"" + JsonUtils.escapeJson(e.getMessage()) + "\"}", "application/json");
                 } catch (BookingQuotaExceededException e) {
                     sendResponse(exchange, 429, "{\"success\":false,\"error\":\"" + JsonUtils.escapeJson(e.getMessage()) + "\"}", "application/json");
+                } catch (InsufficientPlayersException e) {
+                    sendResponse(exchange, 400, "{\"success\":false,\"error\":\"" + JsonUtils.escapeJson(e.getMessage()) + "\"}", "application/json");
                 }
             }
         }
@@ -284,6 +315,7 @@ public class CampusWebServer {
 
             String courtId = params.get("courtId");
             String slot = params.get("slot");
+            if (slot == null) slot = params.get("slotTime");
             String userId = params.get("userId"); // "admin" or userId
 
             if (courtId == null || slot == null) {
@@ -336,6 +368,107 @@ public class CampusWebServer {
                 } else {
                     sendResponse(exchange, 403, "{\"success\":false,\"error\":\"Cancellation denied: Slot was not booked by " + authUser.getName() + "\"}", "application/json");
                 }
+            }
+        }
+    }
+
+    private class ApiModifyHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, "{\"error\":\"Method Not Allowed\"}", "application/json");
+                return;
+            }
+
+            String body = readRequestBody(exchange);
+            Map<String, String> params = JsonUtils.parseFlatJson(body);
+
+            String courtId = params.get("courtId");
+            String slot = params.get("slot");
+            if (slot == null) slot = params.get("oldSlot");
+            if (slot == null) slot = params.get("slotTime");
+            String newSlot = params.get("newSlot");
+            String userId = params.get("userId");
+            String format = params.get("format");
+            if (format == null) format = params.get("matchFormat");
+            String playersStr = params.get("players");
+            if (playersStr == null) playersStr = params.get("playerRoster");
+
+            if (courtId == null || slot == null || userId == null) {
+                sendResponse(exchange, 400, "{\"success\":false,\"error\":\"courtId, slot (or oldSlot), and userId are required\"}", "application/json");
+                return;
+            }
+
+            synchronized (data) {
+                Court targetCourt = null;
+                for (Court c : data.getCourts()) {
+                    if (c.getCourtId().equalsIgnoreCase(courtId)) {
+                        targetCourt = c;
+                        break;
+                    }
+                }
+
+                if (targetCourt == null) {
+                    sendResponse(exchange, 404, "{\"success\":false,\"error\":\"Court not found: " + courtId + "\"}", "application/json");
+                    return;
+                }
+
+                User authUser = null;
+                for (User u : data.getUsers()) {
+                    if (u.getUserId().equalsIgnoreCase(userId)) {
+                        authUser = u;
+                        break;
+                    }
+                }
+                if (authUser == null && ("admin".equalsIgnoreCase(userId) || "F201".equalsIgnoreCase(userId))) {
+                    authUser = new Faculty("admin", "Administrator");
+                }
+                if (authUser == null) {
+                    sendResponse(exchange, 404, "{\"success\":false,\"error\":\"Authorizing user not found: " + userId + "\"}", "application/json");
+                    return;
+                }
+
+                // Reschedule to a new slot
+                if (newSlot != null && !newSlot.trim().isEmpty() && !newSlot.equalsIgnoreCase(slot)) {
+                    try {
+                        boolean modified = targetCourt.modifySlot(slot, newSlot, authUser, data.getCourts());
+                        if (modified) {
+                            sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Booking rescheduled from '" + slot + "' to '" + newSlot + "' successfully.\"}", "application/json");
+                        } else {
+                            sendResponse(exchange, 403, "{\"success\":false,\"error\":\"Reschedule denied: Slot was not booked by " + authUser.getName() + ".\"}", "application/json");
+                        }
+                    } catch (SlotAlreadyBookedException e) {
+                        sendResponse(exchange, 409, "{\"success\":false,\"error\":\"" + JsonUtils.escapeJson(e.getMessage()) + "\"}", "application/json");
+                    } catch (Exception e) {
+                        sendResponse(exchange, 400, "{\"success\":false,\"error\":\"" + JsonUtils.escapeJson(e.getMessage()) + "\"}", "application/json");
+                    }
+                    return;
+                }
+
+                // Update roster or match format
+                if (playersStr != null || format != null) {
+                    List<String> playerList = new ArrayList<>();
+                    if (playersStr != null && !playersStr.trim().isEmpty()) {
+                        for (String p : playersStr.split(",")) {
+                            if (!p.trim().isEmpty()) playerList.add(p.trim());
+                        }
+                    }
+                    try {
+                        boolean updated = targetCourt.updateRoster(slot, authUser, format, playerList);
+                        if (updated) {
+                            sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Team roster & match format updated successfully for slot '" + slot + "'.\"}", "application/json");
+                        } else {
+                            sendResponse(exchange, 403, "{\"success\":false,\"error\":\"Roster update denied: Slot was not booked by " + authUser.getName() + ".\"}", "application/json");
+                        }
+                    } catch (InsufficientPlayersException e) {
+                        sendResponse(exchange, 400, "{\"success\":false,\"error\":\"" + JsonUtils.escapeJson(e.getMessage()) + "\"}", "application/json");
+                    } catch (Exception e) {
+                        sendResponse(exchange, 400, "{\"success\":false,\"error\":\"" + JsonUtils.escapeJson(e.getMessage()) + "\"}", "application/json");
+                    }
+                    return;
+                }
+
+                sendResponse(exchange, 400, "{\"success\":false,\"error\":\"Specify newSlot to reschedule, or format/players to update team roster.\"}", "application/json");
             }
         }
     }

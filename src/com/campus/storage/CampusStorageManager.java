@@ -58,6 +58,8 @@ public class CampusStorageManager {
         courts.add(new Court("CRT1", "Badminton"));
         courts.add(new Court("CRT2", "Tennis"));
         courts.add(new Court("CRT3", "Basketball"));
+        courts.add(new Court("CRT4", "Football Turf"));
+        courts.add(new Court("CRT5", "Cricket Ground"));
         data.setCourts(courts);
 
         // Sample Hostel Students

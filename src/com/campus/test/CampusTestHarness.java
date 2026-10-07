@@ -473,6 +473,100 @@ public class CampusTestHarness {
             failed++;
         }
 
+        // Test 23: Multi-player Squad Enforcement (InsufficientPlayersException for Football 11v11)
+        try {
+            Court footballTurf = new Court("CRT4", "Football Turf");
+            User captain = new Student("S101", "Rahul Sharma");
+            List<String> smallSquad = new ArrayList<>();
+            smallSquad.add("S101");
+            smallSquad.add("S102");
+            smallSquad.add("S103"); // only 3 players provided, 22 required for 11v11
+
+            footballTurf.reserve("16:00-17:00", captain, "11 vs 11 Match", smallSquad, java.util.Collections.singletonList(footballTurf));
+            System.err.println(" [FAIL] Test 23: Expected InsufficientPlayersException for undersized squad");
+            failed++;
+        } catch (InsufficientPlayersException e) {
+            System.out.println(" [PASS] Test 23: Caught expected InsufficientPlayersException (Football 11v11 undersized squad rejected)");
+            passed++;
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 23 unexpected exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 24: Successful Full Team Roster Booking (22 Players for Football 11v11)
+        try {
+            Court footballTurf = new Court("CRT4", "Football Turf");
+            User captain = new Student("S101", "Rahul Sharma");
+            List<String> fullSquad = new ArrayList<>();
+            fullSquad.add(captain.getUserId());
+            for (int i = 2; i <= 22; i++) {
+                fullSquad.add("STU_" + i);
+            }
+
+            boolean booked = footballTurf.reserve("16:00-17:00", captain, "11 vs 11 Match", fullSquad, java.util.Collections.singletonList(footballTurf));
+            CourtBooking booking = footballTurf.getBooking("16:00-17:00");
+
+            if (booked && booking != null && booking.getPlayerCount() == 22 && "11 vs 11 Match".equals(booking.getMatchFormat())) {
+                System.out.println(" [PASS] Test 24: Full team roster reservation verified (22 players registered)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 24: Team reservation failed or incomplete roster, count=" + (booking != null ? booking.getPlayerCount() : -1));
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 24 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 25: Booking Modification & Atomic Rescheduling (modifySlot)
+        try {
+            Court badmintonCourt = new Court("CRT1", "Badminton");
+            User player = new Student("S102", "Priya Nair");
+            List<String> singles = new ArrayList<>();
+            singles.add("S102");
+            singles.add("S101");
+
+            badmintonCourt.reserve("10:00-11:00", player, "Singles (1v1)", singles, java.util.Collections.singletonList(badmintonCourt));
+            // Reschedule from 10:00-11:00 to 14:00-15:00
+            boolean modified = badmintonCourt.modifySlot("10:00-11:00", "14:00-15:00", player, java.util.Collections.singletonList(badmintonCourt));
+
+            if (modified && badmintonCourt.checkAvailability("10:00-11:00") && !badmintonCourt.checkAvailability("14:00-15:00")) {
+                System.out.println(" [PASS] Test 25: Booking atomic rescheduling verified (old slot freed, new slot reserved)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 25: Rescheduling failed or state inconsistent");
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 25 exception: " + e.getMessage());
+            failed++;
+        }
+
+        // Test 26: Booking Deletion / Release Authorization
+        try {
+            Court tennisCourt = new Court("CRT2", "Tennis");
+            User player = new Student("S101", "Rahul Sharma");
+            List<String> doubles = new ArrayList<>();
+            doubles.add("S101");
+            doubles.add("S102");
+            doubles.add("S103");
+            doubles.add("S104");
+
+            tennisCourt.reserve("17:00-18:00", player, "Doubles (2v2)", doubles, java.util.Collections.singletonList(tennisCourt));
+            boolean released = tennisCourt.release("17:00-18:00", player);
+
+            if (released && tennisCourt.checkAvailability("17:00-18:00") && tennisCourt.getBooking("17:00-18:00") == null) {
+                System.out.println(" [PASS] Test 26: Booking deletion / cancellation verified (slot released and booking cleared)");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 26: Release failed or booking still present");
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 26 exception: " + e.getMessage());
+            failed++;
+        }
+
         System.out.println("\n--------------------------------------------------");
         System.out.println("TEST SUMMARY: Passed " + passed + " / " + (passed + failed) + " tests.");
         System.out.println("--------------------------------------------------");
