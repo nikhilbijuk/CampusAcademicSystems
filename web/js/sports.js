@@ -83,10 +83,37 @@ function saveBookings(data) {
   localStorage.setItem(BOOKINGS_KEY, JSON.stringify(data));
 }
 
-function seedHash(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
-  return h;
+let liveServerBookings = {};
+
+async function syncLiveServerBookings() {
+  try {
+    const res = await fetch('/api/data');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data || !data.courts) return;
+
+    liveServerBookings = {};
+    data.courts.forEach(court => {
+      const cId = court.courtId;
+      if (court.reservations) {
+        Object.entries(court.reservations).forEach(([slot, info]) => {
+          const cleanSlot = slot.trim().replace('–', '-');
+          const startHour = cleanSlot.split('-')[0].trim();
+          const paddedHour = (startHour.length === 4 && startHour[1] === ':') ? '0' + startHour : startHour;
+          liveServerBookings[`${cId}|${paddedHour}`] = {
+            courtId: cId,
+            slot: cleanSlot,
+            userId: info.userId || 'Student',
+            userName: info.name || 'Reserved',
+            format: info.format || 'Standard',
+            players: info.players || []
+          };
+        });
+      }
+    });
+  } catch (e) {
+    // offline / local fallback
+  }
 }
 
 function slotKey(facilityId, dKey, time) {
@@ -94,12 +121,26 @@ function slotKey(facilityId, dKey, time) {
 }
 
 function getSlotState(facilityId, dKey, time, isToday, currentHour) {
+  const { userId } = getUserProfile();
+  const cId = COURT_MAPPING[facilityId] || 'CRT1';
   const bookings = loadBookings();
   const key = slotKey(facilityId, dKey, time);
-  if (bookings[key]) return bookings[key].by === 'you' ? 'booked-you' : 'booked-other';
 
-  const hash = seedHash(key);
-  if (hash % 6 === 0) return 'booked-other'; // realistic occupancy
+  // 1. Check local booking for this specific date and time
+  if (bookings[key]) {
+    const isYou = bookings[key].by === 'you' || 
+                  (bookings[key].userId && bookings[key].userId.toLowerCase() === userId.toLowerCase());
+    return isYou ? 'booked-you' : 'booked-other';
+  }
+
+  // 2. Check live server bookings (if on Today's date or matching court + hour)
+  const todayKey = dateKey(new Date());
+  if (dKey === todayKey && liveServerBookings[`${cId}|${time}`]) {
+    const sBooking = liveServerBookings[`${cId}|${time}`];
+    const isYou = sBooking.userId && sBooking.userId.toLowerCase() === userId.toLowerCase();
+    return isYou ? 'booked-you' : 'booked-other';
+  }
+
   return 'free';
 }
 
@@ -343,18 +384,38 @@ function initSportsBooking() {
   function handleSlotClick(time) {
     const bookings = loadBookings();
     const key = slotKey(activeFacility, activeDate, time);
+    const { userId } = getUserProfile();
+    const cId = COURT_MAPPING[activeFacility] || 'CRT1';
+    const serverB = (activeDate === dateKey(new Date())) ? liveServerBookings[`${cId}|${time}`] : null;
 
-    if (bookings[key] && bookings[key].by === 'you') {
-      // Clicked on own booked slot -> open modify modal
-      openModifyBookingModal(bookings[key]);
-    } else if (bookings[key] && bookings[key].by !== 'you') {
-      showToast(`Slot ${time} is already booked by another student.`);
-    } else {
-      const hash = seedHash(key);
-      if (hash % 6 === 0) {
-        showToast(`Slot ${time} is already occupied by campus teams.`);
-        return;
+    let existingBooking = bookings[key];
+    if (!existingBooking && serverB) {
+      existingBooking = {
+        by: (serverB.userId && serverB.userId.toLowerCase() === userId.toLowerCase()) ? 'you' : 'other',
+        facility: activeFacility,
+        courtId: cId,
+        date: activeDate,
+        time: time,
+        slotStr: serverB.slot,
+        userId: serverB.userId,
+        userName: serverB.userName,
+        format: serverB.format,
+        players: serverB.players
+      };
+    }
+
+    if (existingBooking) {
+      const isYou = existingBooking.by === 'you' || 
+                    (existingBooking.userId && existingBooking.userId.toLowerCase() === userId.toLowerCase());
+      const isAdmin = userId.toLowerCase() === 'admin' || userId.toLowerCase() === 'f201';
+
+      if (isYou || isAdmin) {
+        // Open modify / cancel modal
+        openModifyBookingModal(existingBooking);
+      } else {
+        showToast(`Slot ${time} is already booked by ${existingBooking.userName || 'another student'}.`);
       }
+    } else {
       // Empty slot -> open team booking modal
       openTeamBookingModal(activeFacility, activeDate, time);
     }
@@ -422,6 +483,7 @@ function initSportsBooking() {
       };
       saveBookings(bookings);
 
+      await syncLiveServerBookings();
       closeTeamBookingModal();
       renderSlots();
       renderMyBookings();
@@ -437,7 +499,7 @@ function initSportsBooking() {
 
       const newSlotStr = document.getElementById('mbmNewSlotSelect').value;
       const oldSlotStr = modifyingBooking.slotStr || `${modifyingBooking.time}-${String(parseInt(modifyingBooking.time, 10)+1).padStart(2, '0')}:00`;
-      const newTime = newSlotStr.split('-')[0];
+      const newTime = newSlotStr.split('-')[0].trim();
       const errorAlert = document.getElementById('mbmErrorAlert');
 
       try {
@@ -470,6 +532,7 @@ function initSportsBooking() {
       bookings[newKey] = modifyingBooking;
       saveBookings(bookings);
 
+      await syncLiveServerBookings();
       closeModifyBookingModal();
       renderSlots();
       renderMyBookings();
@@ -529,6 +592,7 @@ function initSportsBooking() {
         saveBookings(bookings);
       }
 
+      await syncLiveServerBookings();
       closeModifyBookingModal();
       renderMyBookings();
       showToast(`Updated team roster (${format} · ${players.length} players)`);
@@ -542,6 +606,10 @@ function initSportsBooking() {
       if (!modifyingBooking) return;
 
       const slotStr = modifyingBooking.slotStr || `${modifyingBooking.time}-${String(parseInt(modifyingBooking.time, 10)+1).padStart(2, '0')}:00`;
+      const { userId } = getUserProfile();
+      const authUserId = (userId.toLowerCase() === 'admin' || userId.toLowerCase() === 'f201')
+        ? 'admin'
+        : (modifyingBooking.userId || userId);
 
       try {
         await fetch('/api/release', {
@@ -550,7 +618,7 @@ function initSportsBooking() {
           body: JSON.stringify({
             courtId: modifyingBooking.courtId,
             slot: slotStr,
-            userId: modifyingBooking.userId
+            userId: authUserId
           })
         });
       } catch (e) {}
@@ -558,7 +626,16 @@ function initSportsBooking() {
       const bookings = loadBookings();
       const key = slotKey(modifyingBooking.facility, modifyingBooking.date, modifyingBooking.time);
       delete bookings[key];
+      Object.keys(bookings).forEach(k => {
+        if (bookings[k].courtId === modifyingBooking.courtId &&
+            (bookings[k].time === modifyingBooking.time || bookings[k].slotStr === slotStr)) {
+          delete bookings[k];
+        }
+      });
       saveBookings(bookings);
+
+      delete liveServerBookings[`${modifyingBooking.courtId}|${modifyingBooking.time}`];
+      await syncLiveServerBookings();
 
       closeModifyBookingModal();
       renderSlots();
@@ -570,7 +647,35 @@ function initSportsBooking() {
   function renderMyBookings() {
     if (!myBookingsEl) return;
     const bookings = loadBookings();
-    const mine = Object.values(bookings).filter(b => b.by === 'you')
+    const { userId } = getUserProfile();
+
+    // Merge any liveServerBookings for this user into local bookings if not already present
+    Object.values(liveServerBookings).forEach(sb => {
+      if (sb.userId && sb.userId.toLowerCase() === userId.toLowerCase()) {
+        const fId = Object.keys(COURT_MAPPING).find(k => COURT_MAPPING[k] === sb.courtId) || 'badminton';
+        const startHour = sb.slot.split('-')[0].trim();
+        const paddedHour = (startHour.length === 4 && startHour[1] === ':') ? '0' + startHour : startHour;
+        const todayKey = dateKey(new Date());
+        const k = slotKey(fId, todayKey, paddedHour);
+        if (!bookings[k]) {
+          bookings[k] = {
+            by: 'you',
+            facility: fId,
+            courtId: sb.courtId,
+            date: todayKey,
+            time: paddedHour,
+            slotStr: sb.slot,
+            userId: sb.userId,
+            userName: sb.userName,
+            format: sb.format,
+            players: sb.players
+          };
+          saveBookings(bookings);
+        }
+      }
+    });
+
+    const mine = Object.values(bookings).filter(b => b.by === 'you' || (b.userId && b.userId.toLowerCase() === userId.toLowerCase()))
       .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
 
     if (mine.length === 0) {
@@ -615,21 +720,29 @@ function initSportsBooking() {
         const tStr = btn.getAttribute('data-cancel-time');
         const bk = loadBookings();
         const item = bk[slotKey(fId, dStr, tStr)];
-        if (!item) return;
-
-        const slotStr = item.slotStr || `${tStr}-${String(parseInt(tStr, 10)+1).padStart(2, '0')}:00`;
         const courtId = COURT_MAPPING[fId] || 'CRT1';
+        const { userId } = getUserProfile();
+        const userToRelease = (item && item.userId) ? item.userId : userId;
+        const slotStr = (item && item.slotStr) ? item.slotStr : `${tStr}-${String(parseInt(tStr, 10)+1).padStart(2, '0')}:00`;
 
         try {
           await fetch('/api/release', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ courtId: courtId, slot: slotStr, userId: item.userId })
+            body: JSON.stringify({ courtId: courtId, slot: slotStr, userId: userToRelease })
           });
         } catch(e) {}
 
         delete bk[slotKey(fId, dStr, tStr)];
+        Object.keys(bk).forEach(k => {
+          if (bk[k].courtId === courtId && (bk[k].time === tStr || bk[k].slotStr === slotStr)) {
+            delete bk[k];
+          }
+        });
         saveBookings(bk);
+
+        delete liveServerBookings[`${courtId}|${tStr}`];
+        await syncLiveServerBookings();
 
         renderMyBookings();
         renderSlots();
@@ -661,8 +774,10 @@ function initSportsBooking() {
   renderFacilityTabs();
   renderMeta();
   renderDateTabs();
-  renderSlots();
-  renderMyBookings();
+  syncLiveServerBookings().then(() => {
+    renderSlots();
+    renderMyBookings();
+  });
 }
 
 window.openTeamBookingModal = openTeamBookingModal;
@@ -808,13 +923,17 @@ async function initFacilitiesAdmin() {
         } catch(e) {}
 
         const bks = loadBookings();
+        const startH = slot.split('-')[0].trim();
         Object.keys(bks).forEach(k => {
           if ((COURT_MAPPING[bks[k].facility] === cId || bks[k].courtId === cId) &&
-              (bks[k].slotStr === slot || bks[k].time === slot.split('-')[0])) {
+              (bks[k].slotStr === slot || bks[k].time === startH)) {
             delete bks[k];
           }
         });
         saveBookings(bks);
+
+        delete liveServerBookings[`${cId}|${startH}`];
+        await syncLiveServerBookings();
 
         showToast(`Slot '${slot}' on ${cId} released by Admin Override.`);
         fetchAndRenderAdminBookings();
@@ -884,6 +1003,7 @@ async function initFacilitiesAdmin() {
       } catch(e) {}
 
       closeAdminBookingModal();
+      await syncLiveServerBookings();
       showToast(`Reserved ${slot} on ${courtId} (Admin Override).`);
       fetchAndRenderAdminBookings();
     });

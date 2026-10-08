@@ -567,6 +567,38 @@ public class CampusTestHarness {
             failed++;
         }
 
+        // Test 27: Flexible / Fuzzy Slot Matching and Admin Release Override
+        try {
+            Court cricketCourt = new Court("CRT5", "Cricket Ground");
+            User player = new Student("S102", "Priya Nair");
+            User admin = new Faculty("admin", "Administrator");
+            List<String> squad = new ArrayList<>();
+            squad.add("S102");
+            squad.add("S101");
+            squad.add("S103");
+            squad.add("S104");
+
+            // Book as full range "06:00-07:00"
+            cricketCourt.reserve("06:00-07:00", player, "Nets Practice Session", squad, java.util.Collections.singletonList(cricketCourt));
+            
+            // Check that availability returns false for prefix "06:00"
+            boolean availBefore = cricketCourt.checkAvailability("06:00");
+            // Release using start hour "06:00" by Admin
+            boolean releasedByAdmin = cricketCourt.release("06:00", admin);
+            boolean availAfter = cricketCourt.checkAvailability("06:00-07:00");
+
+            if (!availBefore && releasedByAdmin && availAfter && cricketCourt.getBooking("06:00") == null) {
+                System.out.println(" [PASS] Test 27: Flexible / fuzzy slot matching and admin release override verified");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 27: Flexible slot matching unbook failed (availBefore=" + availBefore + ", released=" + releasedByAdmin + ", availAfter=" + availAfter + ")");
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 27 exception: " + e.getMessage());
+            failed++;
+        }
+
         System.out.println("\n--------------------------------------------------");
         System.out.println("TEST SUMMARY: Passed " + passed + " / " + (passed + failed) + " tests.");
         System.out.println("--------------------------------------------------");
