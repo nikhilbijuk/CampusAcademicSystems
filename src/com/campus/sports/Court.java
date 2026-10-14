@@ -28,6 +28,40 @@ public class Court implements Reservable, Serializable {
     public String getCourtType() { return courtType; }
     public Map<String, User> getSlotReservations() { return Collections.unmodifiableMap(slotReservations); }
     public Map<String, CourtBooking> getBookings() { return Collections.unmodifiableMap(bookings); }
+
+    public static boolean isPrivilegedUser(User user) {
+        if (user == null) return true;
+        String uid = user.getUserId().trim().toLowerCase();
+        return uid.equals("admin") 
+            || uid.startsWith("adm") 
+            || uid.equals("f201") 
+            || uid.equals("c301") 
+            || user instanceof Faculty 
+            || user instanceof Coach;
+    }
+
+    private static String extractDate(String str) {
+        if (str == null) return null;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\b(\\d{4}-\\d{2}-\\d{2})\\b").matcher(str);
+        return m.find() ? m.group(1) : null;
+    }
+
+    private static String extractTimeOrHour(String str) {
+        if (str == null) return null;
+        String withoutDate = str.replaceAll("\\b\\d{4}-\\d{2}-\\d{2}\\b", "").trim();
+        return withoutDate.isEmpty() ? null : withoutDate;
+    }
+
+    private static String extractStartHour(String str) {
+        if (str == null) return null;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\b(\\d{1,2}:\\d{2})\\b").matcher(str);
+        if (m.find()) {
+            String h = m.group(1);
+            return (h.length() == 4 && h.charAt(1) == ':') ? "0" + h : h;
+        }
+        return null;
+    }
+
     public String findMatchingSlot(String inputSlot) {
         if (inputSlot == null) return null;
         String cleanInput = inputSlot.trim().replace("–", "-");
@@ -41,12 +75,27 @@ public class Court implements Reservable, Serializable {
             String normS = s.trim().replace("–", "-").replaceAll("\\s*-\\s*", "-");
             if (normS.equalsIgnoreCase(normalizedInput)) return s;
         }
-        // 3. Prefix/hour match: e.g. input is "06:00" and stored is "06:00-07:00"
-        String startHourInput = normalizedInput.contains("-") ? normalizedInput.split("-")[0].trim() : normalizedInput;
+        // 3. Date-aware and time-aware prefix/hour match
+        String inDate = extractDate(normalizedInput);
+        String inTime = extractTimeOrHour(normalizedInput);
+        String inStartHour = extractStartHour(inTime != null ? inTime : normalizedInput);
+
         for (String s : slotReservations.keySet()) {
             String normS = s.trim().replace("–", "-").replaceAll("\\s*-\\s*", "-");
-            String startHourS = normS.contains("-") ? normS.split("-")[0].trim() : normS;
-            if (startHourS.equalsIgnoreCase(startHourInput)) {
+            String sDate = extractDate(normS);
+            String sTime = extractTimeOrHour(normS);
+            String sStartHour = extractStartHour(sTime != null ? sTime : normS);
+
+            // If both specify dates and dates differ, do not match across dates
+            if (inDate != null && sDate != null && !inDate.equalsIgnoreCase(sDate)) {
+                continue;
+            }
+
+            // Compare time string or start hour
+            if (inTime != null && sTime != null && inTime.equalsIgnoreCase(sTime)) {
+                return s;
+            }
+            if (inStartHour != null && sStartHour != null && inStartHour.equalsIgnoreCase(sStartHour)) {
                 return s;
             }
         }
@@ -84,10 +133,12 @@ public class Court implements Reservable, Serializable {
         }
         if (type.contains("foot") || type.contains("turf") || type.contains("soccer")) {
             if (fmt.contains("11") || fmt.contains("22") || fmt.contains("full")) return 22; // 11 + 11 Match
+            if (fmt.contains("tournament") || fmt.contains("practice")) return 2; // Practice / Tournament override
             return 14; // 7 + 7 Turf Match
         }
         if (type.contains("cricket")) {
-            if (fmt.contains("11") || fmt.contains("22") || fmt.contains("match")) return 22; // 11 + 11 Match
+            if (fmt.contains("11") || fmt.contains("22") || (fmt.contains("match") && !fmt.contains("net"))) return 22; // 11 + 11 Match
+            if (fmt.contains("tournament") || fmt.contains("practice")) return 2;
             return 4; // Nets practice minimum (batsman + bowlers)
         }
         return 2; // General court minimum
@@ -141,17 +192,20 @@ public class Court implements Reservable, Serializable {
             throw new OutstandingFineException(user.getName(), user.getFineBalance());
         }
 
-        int activeBookings = 0;
-        for (Court court : allCourts) {
-            for (User bookedUser : court.slotReservations.values()) {
-                if (bookedUser != null && bookedUser.getUserId().equalsIgnoreCase(user.getUserId())) {
-                    activeBookings++;
+        // Quotas apply to regular students; privileged campus accounts (Admin, Faculty, Coach) have priority
+        if (!isPrivilegedUser(user)) {
+            int activeBookings = 0;
+            for (Court court : allCourts) {
+                for (User bookedUser : court.slotReservations.values()) {
+                    if (bookedUser != null && bookedUser.getUserId().equalsIgnoreCase(user.getUserId())) {
+                        activeBookings++;
+                    }
                 }
             }
-        }
 
-        if (activeBookings >= user.getBookingLimit()) {
-            throw new BookingQuotaExceededException(user.getName(), user.getBookingLimit(), activeBookings);
+            if (activeBookings >= user.getBookingLimit()) {
+                throw new BookingQuotaExceededException(user.getName(), user.getBookingLimit(), activeBookings);
+            }
         }
 
         String format = (matchFormat != null && !matchFormat.trim().isEmpty()) ? matchFormat.trim() : "Standard";
@@ -191,7 +245,7 @@ public class Court implements Reservable, Serializable {
 
         User existingUser = slotReservations.get(matchedOldSlot);
         if (existingUser != null && !existingUser.getUserId().equalsIgnoreCase(user.getUserId())
-                && !"admin".equalsIgnoreCase(user.getUserId()) && !"F201".equalsIgnoreCase(user.getUserId())) {
+                && !isPrivilegedUser(user)) {
             return false; // Unauthorized
         }
 
@@ -203,12 +257,14 @@ public class Court implements Reservable, Serializable {
         CourtBooking oldBooking = bookings.remove(matchedOldSlot);
         slotReservations.remove(matchedOldSlot);
 
-        slotReservations.put(newSlot, existingUser);
+        User newUser = (existingUser != null) ? existingUser : user;
+        slotReservations.put(newSlot, newUser);
         if (oldBooking != null) {
             oldBooking.setSlot(newSlot);
             bookings.put(newSlot, oldBooking);
         } else {
-            bookings.put(newSlot, new CourtBooking(courtId, newSlot, existingUser, "Standard", Collections.singletonList(existingUser.getUserId())));
+            String captainId = (newUser != null) ? newUser.getUserId() : "Player";
+            bookings.put(newSlot, new CourtBooking(courtId, newSlot, newUser, "Standard", Collections.singletonList(captainId)));
         }
         return true;
     }
@@ -225,7 +281,7 @@ public class Court implements Reservable, Serializable {
 
         User existingUser = slotReservations.get(matchedSlot);
         if (existingUser != null && !existingUser.getUserId().equalsIgnoreCase(user.getUserId())
-                && !"admin".equalsIgnoreCase(user.getUserId()) && !"F201".equalsIgnoreCase(user.getUserId())) {
+                && !isPrivilegedUser(user)) {
             return false; // Unauthorized
         }
 
@@ -274,8 +330,9 @@ public class Court implements Reservable, Serializable {
         String matchedSlot = findMatchingSlot(slot);
         if (matchedSlot != null) {
             User reservedUser = slotReservations.get(matchedSlot);
-            if (reservedUser == null || user == null || reservedUser.getUserId().equalsIgnoreCase(user.getUserId())
-                    || "admin".equalsIgnoreCase(user.getUserId()) || "F201".equalsIgnoreCase(user.getUserId())) {
+            if (reservedUser == null || user == null 
+                    || reservedUser.getUserId().equalsIgnoreCase(user.getUserId())
+                    || isPrivilegedUser(user)) {
                 slotReservations.remove(matchedSlot);
                 bookings.remove(matchedSlot);
                 return true;

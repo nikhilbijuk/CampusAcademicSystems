@@ -49,6 +49,9 @@ public class CampusStorageManager {
         List<User> users = new ArrayList<>();
         users.add(new Student("S101", "Rahul Sharma"));
         users.add(new Student("S102", "Priya Nair"));
+        users.add(new Student("S103", "Nikhil Biju"));
+        users.add(new Student("ASI2023CS041", "Aditi Menon"));
+        users.add(new Faculty("ADM-014", "Rahul Verma"));
         users.add(new Faculty("F201", "Dr. Suresh Kumar"));
         users.add(new Coach("C301", "Coach Vikram"));
         data.setUsers(users);

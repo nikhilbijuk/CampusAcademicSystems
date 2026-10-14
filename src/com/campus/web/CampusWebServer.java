@@ -161,7 +161,8 @@ public class CampusWebServer {
                     int slotIdx = 0;
                     for (Map.Entry<String, User> entry : res.entrySet()) {
                         if (slotIdx++ > 0) json.append(",");
-                        json.append("\"").append(JsonUtils.escapeJson(entry.getKey())).append("\":{");
+                        String slotKey = entry.getKey();
+                        json.append("\"").append(JsonUtils.escapeJson(slotKey)).append("\":{");
                         User bookedUser = entry.getValue();
                         if (bookedUser != null) {
                             json.append("\"userId\":\"").append(JsonUtils.escapeJson(bookedUser.getUserId())).append("\",")
@@ -169,7 +170,19 @@ public class CampusWebServer {
                         } else {
                             json.append("\"userId\":null,\"name\":\"Reserved\"");
                         }
-                        CourtBooking cb = c.getBooking(entry.getKey());
+
+                        // Check if slotKey contains date
+                        java.util.regex.Matcher dm = java.util.regex.Pattern.compile("\\b(\\d{4}-\\d{2}-\\d{2})\\b").matcher(slotKey);
+                        if (dm.find()) {
+                            String foundDate = dm.group(1);
+                            String timeOnly = slotKey.replace(foundDate, "").trim();
+                            json.append(",\"date\":\"").append(foundDate).append("\",")
+                                .append("\"timeSlot\":\"").append(JsonUtils.escapeJson(timeOnly)).append("\"");
+                        } else {
+                            json.append(",\"date\":null,\"timeSlot\":\"").append(JsonUtils.escapeJson(slotKey)).append("\"");
+                        }
+
+                        CourtBooking cb = c.getBooking(slotKey);
                         if (cb != null) {
                             json.append(",\"format\":\"").append(JsonUtils.escapeJson(cb.getMatchFormat())).append("\",")
                                 .append("\"players\":[");
@@ -247,6 +260,7 @@ public class CampusWebServer {
             String courtId = params.get("courtId");
             String slot = params.get("slot");
             if (slot == null) slot = params.get("slotTime");
+            String date = params.get("date");
             String userId = params.get("userId");
             String format = params.get("format");
             if (format == null) format = params.get("matchFormat");
@@ -257,6 +271,10 @@ public class CampusWebServer {
                 sendResponse(exchange, 400, "{\"success\":false,\"error\":\"courtId, slot, and userId are required\"}", "application/json");
                 return;
             }
+
+            String fullSlot = (date != null && !date.trim().isEmpty() && !slot.contains(date))
+                ? date.trim() + " " + slot
+                : slot;
 
             synchronized (data) {
                 Court targetCourt = null;
@@ -280,8 +298,17 @@ public class CampusWebServer {
                     return;
                 }
                 if (targetUser == null) {
-                    sendResponse(exchange, 404, "{\"success\":false,\"error\":\"User not found: " + userId + "\"}", "application/json");
-                    return;
+                    String uidLower = userId.trim().toLowerCase();
+                    if (uidLower.startsWith("adm") || uidLower.equals("admin")) {
+                        targetUser = new Faculty(userId, "Administrator");
+                    } else if (uidLower.startsWith("f")) {
+                        targetUser = new Faculty(userId, "Faculty Member");
+                    } else if (uidLower.startsWith("c")) {
+                        targetUser = new Coach(userId, "Coach");
+                    } else {
+                        targetUser = new Student(userId, userId);
+                    }
+                    data.getUsers().add(targetUser);
                 }
 
                 List<String> playerList = new ArrayList<>();
@@ -297,9 +324,9 @@ public class CampusWebServer {
                 }
 
                 try {
-                    targetCourt.reserve(slot, targetUser, format, playerList, data.getCourts());
+                    targetCourt.reserve(fullSlot, targetUser, format, playerList, data.getCourts());
                     persistState();
-                    sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Slot '" + slot + "' reserved successfully for " + targetUser.getName() + " (" + (format != null ? format : "Standard") + " - " + playerList.size() + " players)\"}", "application/json");
+                    sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Slot '" + fullSlot + "' reserved successfully for " + targetUser.getName() + " (" + (format != null ? format : "Standard") + " - " + playerList.size() + " players)\"}", "application/json");
                 } catch (SlotAlreadyBookedException e) {
                     sendResponse(exchange, 409, "{\"success\":false,\"error\":\"" + JsonUtils.escapeJson(e.getMessage()) + "\"}", "application/json");
                 } catch (OutstandingFineException e) {
@@ -327,12 +354,17 @@ public class CampusWebServer {
             String courtId = params.get("courtId");
             String slot = params.get("slot");
             if (slot == null) slot = params.get("slotTime");
+            String date = params.get("date");
             String userId = params.get("userId"); // "admin" or userId
 
             if (courtId == null || slot == null) {
                 sendResponse(exchange, 400, "{\"success\":false,\"error\":\"courtId and slot are required\"}", "application/json");
                 return;
             }
+
+            String fullSlot = (date != null && !date.trim().isEmpty() && !slot.contains(date))
+                ? date.trim() + " " + slot
+                : slot;
 
             synchronized (data) {
                 Court targetCourt = null;
@@ -348,36 +380,33 @@ public class CampusWebServer {
                     return;
                 }
 
-                if (targetCourt.checkAvailability(slot)) {
-                    sendResponse(exchange, 400, "{\"success\":false,\"error\":\"Slot '" + slot + "' is not currently booked\"}", "application/json");
-                    return;
+                // Locate auth user
+                User authUser = null;
+                if (userId != null) {
+                    for (User u : data.getUsers()) {
+                        if (u.getUserId().equalsIgnoreCase(userId)) {
+                            authUser = u;
+                            break;
+                        }
+                    }
                 }
 
-                // If admin or no userId specified, force release
-                if (userId == null || userId.equalsIgnoreCase("admin") || userId.equalsIgnoreCase("0")) {
-                    targetCourt.release(slot);
+                String uidLower = (userId != null) ? userId.trim().toLowerCase() : "";
+                boolean isAdmin = uidLower.isEmpty() || uidLower.equals("admin") || uidLower.startsWith("adm") || uidLower.equals("0") || Court.isPrivilegedUser(authUser);
+
+                // Admin or force override
+                if (isAdmin) {
+                    targetCourt.release(fullSlot);
                     persistState();
                     sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Slot released successfully (Admin override)\"}", "application/json");
                     return;
                 }
 
-                User authUser = null;
-                for (User u : data.getUsers()) {
-                    if (u.getUserId().equalsIgnoreCase(userId)) {
-                        authUser = u;
-                        break;
-                    }
-                }
-
                 if (authUser == null) {
-                    if ("admin".equalsIgnoreCase(userId) || "F201".equalsIgnoreCase(userId)) {
-                        authUser = new Faculty("admin", "Administrator");
-                    } else {
-                        authUser = new Student(userId, userId);
-                    }
+                    authUser = new Student(userId, userId);
                 }
 
-                boolean released = targetCourt.release(slot, authUser);
+                boolean released = targetCourt.release(fullSlot, authUser);
                 if (released) {
                     persistState();
                     sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Slot released successfully by " + authUser.getName() + "\"}", "application/json");
@@ -404,6 +433,7 @@ public class CampusWebServer {
             if (slot == null) slot = params.get("oldSlot");
             if (slot == null) slot = params.get("slotTime");
             String newSlot = params.get("newSlot");
+            String date = params.get("date");
             String userId = params.get("userId");
             String format = params.get("format");
             if (format == null) format = params.get("matchFormat");
@@ -414,6 +444,9 @@ public class CampusWebServer {
                 sendResponse(exchange, 400, "{\"success\":false,\"error\":\"courtId, slot (or oldSlot), and userId are required\"}", "application/json");
                 return;
             }
+
+            String fullOldSlot = (date != null && !date.trim().isEmpty() && !slot.contains(date)) ? date.trim() + " " + slot : slot;
+            String fullNewSlot = (date != null && !date.trim().isEmpty() && newSlot != null && !newSlot.contains(date)) ? date.trim() + " " + newSlot : newSlot;
 
             synchronized (data) {
                 Court targetCourt = null;
@@ -436,20 +469,27 @@ public class CampusWebServer {
                         break;
                     }
                 }
-                if (authUser == null && ("admin".equalsIgnoreCase(userId) || "F201".equalsIgnoreCase(userId))) {
-                    authUser = new Faculty("admin", "Administrator");
-                }
+                String uidLower = userId.trim().toLowerCase();
                 if (authUser == null) {
-                    authUser = new Student(userId, userId);
+                    if (uidLower.startsWith("adm") || uidLower.equals("admin")) {
+                        authUser = new Faculty(userId, "Administrator");
+                    } else if (uidLower.startsWith("f")) {
+                        authUser = new Faculty(userId, "Faculty Member");
+                    } else if (uidLower.startsWith("c")) {
+                        authUser = new Coach(userId, "Coach");
+                    } else {
+                        authUser = new Student(userId, userId);
+                    }
+                    data.getUsers().add(authUser);
                 }
 
                 // Reschedule to a new slot
-                if (newSlot != null && !newSlot.trim().isEmpty() && !newSlot.equalsIgnoreCase(slot)) {
+                if (fullNewSlot != null && !fullNewSlot.trim().isEmpty() && !fullNewSlot.equalsIgnoreCase(fullOldSlot)) {
                     try {
-                        boolean modified = targetCourt.modifySlot(slot, newSlot, authUser, data.getCourts());
+                        boolean modified = targetCourt.modifySlot(fullOldSlot, fullNewSlot, authUser, data.getCourts());
                         if (modified) {
                             persistState();
-                            sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Booking rescheduled from '" + slot + "' to '" + newSlot + "' successfully.\"}", "application/json");
+                            sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Booking rescheduled from '" + fullOldSlot + "' to '" + fullNewSlot + "' successfully.\"}", "application/json");
                         } else {
                             sendResponse(exchange, 403, "{\"success\":false,\"error\":\"Reschedule denied: Slot was not booked by " + authUser.getName() + ".\"}", "application/json");
                         }
@@ -470,10 +510,10 @@ public class CampusWebServer {
                         }
                     }
                     try {
-                        boolean updated = targetCourt.updateRoster(slot, authUser, format, playerList);
+                        boolean updated = targetCourt.updateRoster(fullOldSlot, authUser, format, playerList);
                         if (updated) {
                             persistState();
-                            sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Team roster & match format updated successfully for slot '" + slot + "'.\"}", "application/json");
+                            sendResponse(exchange, 200, "{\"success\":true,\"message\":\"Team roster & match format updated successfully for slot '" + fullOldSlot + "'.\"}", "application/json");
                         } else {
                             sendResponse(exchange, 403, "{\"success\":false,\"error\":\"Roster update denied: Slot was not booked by " + authUser.getName() + ".\"}", "application/json");
                         }

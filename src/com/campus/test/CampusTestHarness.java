@@ -598,6 +598,40 @@ public class CampusTestHarness {
             failed++;
         }
 
+        // Test 28: Date-aware Multi-Day Slot Reservations & Institutional Admin (ADM-014) Override
+        try {
+            Court turf = new Court("CRT4", "Football Turf");
+            Student s1 = new Student("S101", "Rahul Sharma");
+            Faculty admin = new Faculty("ADM-014", "Rahul Verma");
+            List<String> squad = java.util.Arrays.asList("S101", "S102");
+
+            // Book slot for Today
+            turf.reserve("2026-10-14 06:00-07:00", s1, "Tournament / Practice", squad, java.util.Collections.singletonList(turf));
+
+            // Verify that the same time slot on TOMORROW is still available (no cross-date blocking)
+            boolean tomorrowAvail = turf.checkAvailability("2026-10-15 06:00-07:00");
+            boolean todayAvail = turf.checkAvailability("2026-10-14 06:00-07:00");
+
+            // Book slot for Tomorrow
+            turf.reserve("2026-10-15 06:00-07:00", s1, "Tournament / Practice", squad, java.util.Collections.singletonList(turf));
+
+            // Institutional Admin (ADM-014) releases Today's slot
+            boolean releasedToday = turf.release("2026-10-14 06:00-07:00", admin);
+            boolean todayFreed = turf.checkAvailability("2026-10-14 06:00-07:00");
+            boolean tomorrowStillBooked = !turf.checkAvailability("2026-10-15 06:00-07:00");
+
+            if (tomorrowAvail && !todayAvail && releasedToday && todayFreed && tomorrowStillBooked) {
+                System.out.println(" [PASS] Test 28: Date-aware multi-day slot reservations & ADM-014 admin release override verified");
+                passed++;
+            } else {
+                System.err.println(" [FAIL] Test 28: Date-aware reservation verification failed.");
+                failed++;
+            }
+        } catch (Exception e) {
+            System.err.println(" [FAIL] Test 28 exception: " + e.getMessage());
+            failed++;
+        }
+
         System.out.println("\n--------------------------------------------------");
         System.out.println("TEST SUMMARY: Passed " + passed + " / " + (passed + failed) + " tests.");
         System.out.println("--------------------------------------------------");
