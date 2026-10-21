@@ -356,7 +356,7 @@ public class CampusDao {
 
         double penalty = 0.0;
         if (overdueDays > 0) {
-            penalty = overdueDays * 2.0; // Rs. 2/day overdue
+            penalty = overdueDays * com.campus.library.LibraryLoan.DAILY_OVERDUE_FINE; // Unified Rs. 5.0/day overdue
             // Find borrower to add fine
             String loanSql = "SELECT user_id FROM library_loans WHERE isbn = ? AND is_returned = 0 LIMIT 1";
             try (Connection conn = db.getConnection();

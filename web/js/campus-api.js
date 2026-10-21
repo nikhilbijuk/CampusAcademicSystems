@@ -74,7 +74,7 @@
           return;
         }
 
-        const rollNo = rollEl ? rollEl.textContent.trim() : 'STU202';
+        const rollNo = rollEl ? rollEl.textContent.trim() : 'S101';
 
         if (isServerLive) {
           try {
@@ -116,7 +116,7 @@
 
     if (refreshBillBtn) {
       refreshBillBtn.addEventListener('click', () => {
-        const rollNo = rollEl ? rollEl.textContent.trim() : 'STU202';
+        const rollNo = rollEl ? rollEl.textContent.trim() : 'S101';
         fetchAndRenderBill(rollNo);
       });
     }

@@ -214,21 +214,30 @@ public class DatabaseManager {
         try (PreparedStatement ps = conn.prepareStatement(userSql)) {
             insertUser(ps, "S101", "Rahul Sharma", "Student", 2, 0.0);
             insertUser(ps, "S102", "Priya Nair", "Student", 2, 0.0);
+            insertUser(ps, "S103", "Nikhil Biju", "Student", 2, 0.0);
+            insertUser(ps, "ASI2023CS041", "Aditi Menon", "Student", 2, 0.0);
+            insertUser(ps, "ADM-014", "Rahul Verma", "Faculty", 5, 0.0);
             insertUser(ps, "F201", "Dr. Suresh Kumar", "Faculty", 5, 0.0);
             insertUser(ps, "C301", "Coach Vikram", "Coach", 10, 0.0);
         }
 
-        // Seed Courts
+        // Seed Courts (All 5 facilities)
         String courtSql = "INSERT INTO courts (court_id, court_type) VALUES (?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(courtSql)) {
             ps.setString(1, "CRT1"); ps.setString(2, "Badminton"); ps.executeUpdate();
             ps.setString(1, "CRT2"); ps.setString(2, "Tennis"); ps.executeUpdate();
             ps.setString(1, "CRT3"); ps.setString(2, "Basketball"); ps.executeUpdate();
+            ps.setString(1, "CRT4"); ps.setString(2, "Football Turf"); ps.executeUpdate();
+            ps.setString(1, "CRT5"); ps.setString(2, "Cricket Ground"); ps.executeUpdate();
         }
 
         // Seed Hostel Students
         String hostelSql = "INSERT INTO hostel_students (roll_no, name, room_number, room_type, room_tariff, meal_plan, leaves_this_month) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(hostelSql)) {
+            ps.setString(1, "S101"); ps.setString(2, "Rahul Sharma"); ps.setInt(3, 301);
+            ps.setString(4, "SingleOccupancy"); ps.setDouble(5, 5400.0); ps.setString(6, "StandardPlan"); ps.setInt(7, 0);
+            ps.executeUpdate();
+
             ps.setString(1, "STU202"); ps.setString(2, "Anjali Menon"); ps.setInt(3, 302);
             ps.setString(4, "SingleOccupancy"); ps.setDouble(5, 5400.0); ps.setString(6, "StandardPlan"); ps.setInt(7, 0);
             ps.executeUpdate();
@@ -250,6 +259,14 @@ public class DatabaseManager {
 
         // Seed KTU Courses & Academic Performance
         seedAcademicCoursesIfEmpty(conn);
+
+        // Seed default active Court Reservation for S101 on CRT1
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM court_reservations")) {
+            if (rs.next() && rs.getInt(1) == 0) {
+                st.executeUpdate("INSERT INTO court_reservations (court_id, slot, user_id, reserved_at) VALUES ('CRT1', '06:00-07:00', 'S101', datetime('now'))");
+            }
+        }
     }
 
     private void seedAcademicCoursesIfEmpty(Connection conn) throws SQLException {

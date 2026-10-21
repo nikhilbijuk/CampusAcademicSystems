@@ -67,6 +67,7 @@ public class CampusStorageManager {
 
         // Sample Hostel Students
         List<HostelStudent> hostelStudents = new ArrayList<>();
+        hostelStudents.add(new HostelStudent("S101", "Rahul Sharma", new SingleOccupancy(301, 4500.0), new StandardPlan()));
         hostelStudents.add(new HostelStudent("STU202", "Anjali Menon", new SingleOccupancy(302, 4500.0), new StandardPlan()));
         hostelStudents.add(new HostelStudent("STU203", "Rohan Das", new ACSuite(101, 6000.0), new SpecialDietPlan()));
         data.setHostelStudents(hostelStudents);

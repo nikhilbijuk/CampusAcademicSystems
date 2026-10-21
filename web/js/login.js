@@ -35,7 +35,7 @@ const KNOWN_USERS = {
     {
       ids: ['sysadmin', 'root'],
       password: 'admin123',
-      profile: { name: 'System Administrator', id: 'ADM-001', role: 'Chief Controller of Examinations', email: 'admin@campus.edu' }
+      profile: { name: 'System Administrator', id: 'ADM-001', role: 'Chief Controller of Examinations', email: 'admin@adishankara.ac.in' }
     }
   ]
 };
@@ -75,32 +75,10 @@ function authenticate(role, identifier, password) {
 
   for (const entry of list) {
     if (entry.ids.includes(cleanId)) {
-      // Allow correct password or standard demo passwords
-      if (entry.password === cleanPw || cleanPw === 'student123' || cleanPw === 'admin123' || cleanPw === '123456') {
+      if (entry.password === cleanPw) {
         return entry.profile;
       }
     }
-  }
-
-  // Permissive fallback for custom student roll numbers entered during demo
-  if (role === 'student' && cleanId.length >= 3) {
-    return {
-      name: identifier.toUpperCase(),
-      id: identifier.toUpperCase(),
-      course: 'B.Tech Computer Science & Engg (KTU)',
-      year: '2nd Year · Semester 3',
-      email: `${cleanId}@campus.edu`,
-      advisor: 'Dr. Joseph Kurian'
-    };
-  }
-
-  if (role === 'admin' && cleanId.includes('admin')) {
-    return {
-      name: 'Administrator (' + identifier + ')',
-      id: 'ADM-99',
-      role: 'System Administrator',
-      email: identifier
-    };
   }
 
   return null;

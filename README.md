@@ -258,6 +258,43 @@ Launches the traditional console runner with the 9-option interactive menu.
 
 ---
 
+#### Option C: Desktop Graphical User Interface (Java Swing & SQLite JDBC)
+Launches the native event-driven desktop GUI (Module 4 / CO5 requirement) backed by SQLite JDBC and the Singleton `DatabaseManager`.
+
+* **1-Click Launchers**:
+  * **Windows**: Double-click `start-gui.bat`
+  * **Linux / macOS**: Run `./start-gui.sh`
+* **Manual Terminal Launch**:
+  * **Windows (PowerShell or CMD)**:
+    ```powershell
+    java -cp "bin;lib/*" com.campus.gui.CampusSwingApp
+    ```
+  * **Linux / macOS**:
+    ```bash
+    java -cp "bin:lib/*" com.campus.gui.CampusSwingApp
+    ```
+
+---
+
+#### Option D: Inspecting and Managing the SQLite Database (`data/campus.db`)
+The desktop application persists relational state across 10 normalized tables in `data/campus.db`.
+
+* **Opening with DB Browser for SQLite (Recommended for Viva/Presentations)**:
+  1. Download and install **DB Browser for SQLite** from [sqlitebrowser.org](https://sqlitebrowser.org/).
+  2. Click **File → Open Database** and navigate to `data/campus.db`.
+  3. Click the **Browse Data** tab and select any table (e.g. `court_reservations` to view active slot bookings, `hostel_students`, `users`).
+* **Viewing directly in VS Code / IDE**:
+  1. Open the Extensions pane (`Ctrl + Shift + X`).
+  2. Search for **SQLite Viewer** (by Florian Klampfer) and install it.
+  3. Click `data/campus.db` in the workspace explorer to browse and edit tables directly.
+* **Command-Line Database Inspection**:
+  Run the built-in Java database inspector to print all tables and reservation records:
+  ```powershell
+  java -cp "bin;lib/*" com.campus.db.DumpDb
+  ```
+
+---
+
 ### 3️⃣ Running the Automated Unit Test Suite
 Executes the comprehensive 15-test verification harness covering OOP inheritance, slot collisions, quota caps, fine holds, polymorphism tariffs, library loans, overdue penalties, and serialization.
 

@@ -15,6 +15,16 @@ if not exist lib\sqlite-jdbc-3.45.1.0.jar (
     powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.45.1.0/sqlite-jdbc-3.45.1.0.jar', 'lib\sqlite-jdbc-3.45.1.0.jar')"
 )
 
+if not exist lib\slf4j-api-1.7.36.jar (
+    echo Downloading SLF4J API Driver...
+    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar', 'lib\slf4j-api-1.7.36.jar')"
+)
+
+if not exist lib\slf4j-simple-1.7.36.jar (
+    echo Downloading SLF4J Simple Logger...
+    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('https://repo1.maven.org/maven2/org/slf4j/slf4j-simple/1.7.36/slf4j-simple-1.7.36.jar', 'lib\slf4j-simple-1.7.36.jar')"
+)
+
 echo Compiling Java source files with SQLite JDBC driver...
 dir /s /b src\*.java > sources.txt
 javac -cp ".;lib/*" -d bin @sources.txt
