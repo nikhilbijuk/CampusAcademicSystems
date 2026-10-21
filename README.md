@@ -3,6 +3,9 @@
 > 🚀 **Live Deployment**:
 > * 💻 **Full-Stack Cloud Deployment (Live Java Backend on Replit)**: [https://campus-academic-systems--devnikhilbiju.replit.app](https://campus-academic-systems--devnikhilbiju.replit.app)  
 >   *(Powered by OpenJDK 17 on Replit Cloud, live REST APIs `/api/*`, pure OOP domain logic, and real-time state persistence)*
+>
+> 🖥️ **Presentation & Lab Guide**:
+> * 📋 **[Step-by-Step Guide for Running on Another PC / Lab System (Offline & Online)](RUN_ON_ANOTHER_PC.md)**
 
 A modular, Object-Oriented Java framework for managing sports facility reservations, user quotas, leave tracking, and hostel mess billing. Designed to adhere to APJ Abdul Kalam Technological University (KTU) academic project standards.
 
